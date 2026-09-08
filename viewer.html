@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<title>VIVOX · Visualização</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script src="/lib/jquery.min.1.7.js"></script>
+<script src="/lib/turn.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<link rel="stylesheet" href="/style.css" />
+<link rel="stylesheet" href="/ui.css" />
+</head>
+<body class="is-viewer">
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="vg" x1="16.7" y1="9.2" x2="51.3" y2="58" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#CCB691"/><stop offset="1" stop-color="#876224"/>
+      </linearGradient>
+      <symbol id="vivoxV" viewBox="0 0 55 58">
+        <path d="M7.55687 0H0L5.85818 15.6016L6.07185 14.7968C6.71286 12.3787 7.89518 10.1672 8.30828 7.69576C8.72494 5.19223 8.51128 2.57119 7.6281 0.199427L7.55331 0H7.55687Z" fill="url(#vg)"/>
+        <path d="M43.5214 2.33678e-06L25.5409 48.7849L11.8053 11.5134L11.5952 10.9863L11.3175 11.492C8.66792 16.2747 8.25839 21.9726 10.1921 27.1221C14.0347 37.3499 17.8736 47.5777 21.7126 57.8055H29.3692L51.0783 2.33678e-06H43.5214Z" fill="url(#vg)"/>
+        <circle cx="51.3081" cy="54.6547" r="3.34615" fill="#D30303"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <div class="viewer show" id="viewer">
+    <div class="viewer-top">
+      <div class="viewer-title">
+        <a class="logo" href="/portfolio" title="Voltar ao portfólio"><svg viewBox="0 0 55 58"><use href="#vivoxV"/></svg></a>
+        <span id="docName">…</span>
+        <span class="pf-type" id="docType" hidden></span>
+      </div>
+      <div class="viewer-actions">
+        <button class="ghost-btn cmt-tool" id="cmtTool" title="Comentar: clique e escolha o ponto">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span class="lbl">Comentar</span>
+        </button>
+        <button class="ghost-btn" id="hideBtn" title="Ocultar comentários">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span class="lbl" id="hideLbl">Ocultar</span>
+        </button>
+        <button class="ghost-btn" id="listBtn" title="Ver comentários">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          <span class="lbl">Comentários</span><span class="cmt-count" id="cmtCount" hidden>0</span>
+        </button>
+        <button class="ghost-btn" id="fsBtn" title="Tela cheia">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="reader reader--solo">
+      <div class="flip-area" id="flipArea">
+        <button class="side-flip side-flip--prev" id="sidePrev" aria-label="Anterior">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div id="flipbook"></div>
+        <div id="folderView" hidden></div>
+        <button class="side-flip side-flip--next" id="sideNext" aria-label="Próxima">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="cmt-hint" id="cmtHint" hidden>Clique no ponto do material onde quer comentar · <b>Esc</b> cancela</div>
+      </div>
+    </div>
+
+    <div class="controls" id="pageControls">
+      <div class="ctrl-group">
+        <button class="ctrl" id="firstBtn" title="Início"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg></button>
+        <button class="ctrl" id="prevBtn" title="Anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+      </div>
+      <div class="ctrl-group" style="padding:0 6px">
+        <input type="number" class="page-input" id="pageInput" min="1" value="1" />
+        <span class="page-readout"><small>de</small> <span id="totalPages">0</span></span>
+      </div>
+      <div class="ctrl-group">
+        <button class="ctrl" id="nextBtn" title="Próxima"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+        <button class="ctrl" id="lastBtn" title="Fim"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg></button>
+      </div>
+    </div>
+
+    <div class="controls" id="folderControls" hidden>
+      <div class="ctrl-group">
+        <button class="ghost-btn" id="folderToggle">Abrir folder</button>
+        <button class="ghost-btn" id="folderReset">Centralizar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- painel lateral com a lista de comentários -->
+  <div class="cmt-drawer" id="cmtDrawer">
+    <div class="cmt-drawer-head">
+      <strong>Comentários</strong>
+      <button class="sheet-close" id="drawerClose" aria-label="Fechar">✕</button>
+    </div>
+    <div class="cmt-drawer-body" id="cmtDrawerBody"></div>
+  </div>
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+  <!-- balão: novo comentário / thread -->
+  <div class="bubble" id="bubble" hidden></div>
+
+  <div class="loader-wrap show" id="loader">
+    <div class="loader-card">
+      <div class="spin"></div>
+      <h3 id="loaderTitle">Carregando material…</h3>
+      <p id="loaderSub">Buscando as páginas</p>
+      <div class="progress"><i id="progressBar"></i></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="/config.js"></script>
+  <script src="/common.js"></script>
+  <script src="/viewer.js"></script>
+</body>
+</html>

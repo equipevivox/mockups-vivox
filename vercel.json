@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/portfolio", "destination": "/index.html" },
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/m/:slug", "destination": "/viewer.html" }
+  ]
+}
