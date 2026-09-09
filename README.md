@@ -69,7 +69,7 @@ O corte do folder usa `background-size: 300% 100%` + `background-position` em `0
 - Entregues somem da página; há filtro **Abertos / Entregues** e um switch para exibi-los.
 - Botão **Ocultar** esconde todos os marcadores (leitura sem distração).
 - O nome é **obrigatório** na primeira vez e fica guardado em `localStorage` (`vivox_author`).
-- Até **5 imagens** por comentário.
+- Até **5 imagens** por comentário, em JPG, PNG, WebP ou GIF, de até 10 MB cada. Novos anexos vão para o Cloudflare R2.
 
 Os pins ficam **dentro** do elemento da página (`.pg`) ou do painel do folder, por isso acompanham a virada.
 
@@ -77,11 +77,11 @@ Os pins ficam **dentro** do elemento da página (`.pg`) ou do painel do folder, 
 
 ## Fundo de capas do portfólio
 
-O fundo de `/` e `/portfolio` usa uma galeria em perspectiva 3D, com colunas que se deslocam em sentidos opostos ao rolar. O exemplo de referência em React/Framer Motion foi adaptado para CSS e JavaScript nativos, preservando a arquitetura sem build. O progresso vem do elemento que realmente rola (documento ou contêiner), de início a fim; a matriz usa os ângulos e a mola da referência, com profundidade ajustada para preservar o zoom solicitado. Não há uma seção vazia de 600vh nem cópias de capas para prolongar o efeito.
+O fundo de `/` e `/portfolio` usa uma galeria em perspectiva 3D, com colunas que se deslocam em sentidos opostos ao rolar. O exemplo de referência em React/Framer Motion foi adaptado para CSS e JavaScript nativos, preservando o frontend nativo, sem bundler. O progresso vem do elemento que realmente rola (documento ou contêiner), de início a fim; a matriz usa os ângulos e a mola da referência, com profundidade ajustada para preservar o zoom solicitado. Não há uma seção vazia de 600vh nem cópias de capas para prolongar o efeito.
 
 O cabeçalho e os filtros ficam centralizados. A lista apresenta capas com largura de até 420px, com até quatro materiais por linha a partir de 1680px, três entre 900px e 1679px, dois entre 600px e 899px e um abaixo de 600px. Linhas incompletas também ficam centralizadas. A base do tema escuro é preto absoluto (`#000000`); o tema claro usa `#faf9f6`, com sobreposições da mesma cor sobre as capas do fundo, que se aproximam ao rolar. O rodapé “ferramenta interna de revisão de materiais” foi removido.
 
-- A imagem é a primeira página (`{slug}/pages/0.jpg`) de cada material publicado (`is_public = true`) com pelo menos uma página.
+- A imagem é a primeira página de cada material publicado (`is_public = true`) com pelo menos uma página. `VX.materialPageUrl(material, 0)` resolve o provedor correto: R2 nos novos envios, Supabase nos materiais legados.
 - Cada material ocupa uma única posição no fundo. Posições sem material ficam transparentes; não há imagens de exemplo, capas repetidas para preencher a tela ou cartões de substituição.
 - Um material novo preenche a próxima posição livre. A matriz tem altura independente da quantidade e cada capa tem posição absoluta na coluna; incluir mais materiais não recentraliza as capas anteriores. As próximas imagens entram pela direção de movimento da coluna. Os filtros de categoria atuam na grade de cartões; o fundo mantém todos os materiais publicados.
 - A lista é consultada a cada 15 segundos enquanto a aba está visível, ao voltar à aba e ao recuperar a conexão. Envios, publicações, exclusões e mudanças de nome no painel notificam outras abas do mesmo navegador para atualizar imediatamente quando visíveis.
@@ -92,7 +92,7 @@ O cabeçalho e os filtros ficam centralizados. A lista apresenta capas com largu
 
 ## Stack
 
-HTML/CSS/JS puro, sem build.
+Frontend HTML/CSS/JS puro. O empacotamento apenas copia os assets públicos; a API de arquivos roda separadamente na Vercel.
 
 - **turn.js 4 + jQuery 1.7** (`lib/`) — motor do folheamento
 - **PDF.js 3.11.174** — renderiza o PDF em imagens **no envio** (só no admin)
@@ -107,6 +107,10 @@ viewer.html + viewer.js      visualização + comentários
 admin.html  + admin.js       painel (login, upload, nomes, publicação)
 theme.js                     preferência claro/escuro da página inicial
 common.js                    window.VX: cliente Supabase e helpers
+api/storage.js               função Vercel: entrada da API de arquivos
+server/                      autenticação, operações e adaptadores R2/Supabase
+scripts/build-static.cjs      copia somente os assets públicos para public/
+scripts/dev.cjs               servidor local com API e assets permitidos
 portfolio-background.js     distribuição das capas e movimento do fundo
 portfolio-background.css    perspectiva, sobreposição e responsividade do fundo
 style.css                    base e identidade
@@ -138,6 +142,7 @@ Projeto `kthestvyzvbbpnsulned` (região sa-east-1).
 | `type` | text | `revista` \| `mockup` \| `folder` |
 | `is_public` | bool | aparece no portfólio |
 | `cover_version` | uuid | versão de cache das páginas, gerada pelo banco no envio |
+| `r2_prefix` | text, nullable | pasta da versão no R2; nulo mantém páginas legadas no Supabase |
 | `expires_at` | timestamptz | não usado (sempre null) |
 
 **`public.comments`**
@@ -152,10 +157,21 @@ Projeto `kthestvyzvbbpnsulned` (região sa-east-1).
 | `resolved` | bool | "entregue" |
 | `parent_id` | uuid | resposta dentro da thread |
 
-**Storage** — bucket `mockups` (público): páginas em `{slug}/pages/{i}.jpg`, fotos em `{slug}/photos/*`.
-Guarda **imagens renderizadas**, nunca o PDF original (evita o limite de tamanho e abre sem re-renderizar).
+**Arquivos novos — Cloudflare R2**, bucket `grid-files`. As páginas ficam em `materials/{slug}/{uuid}/pages/{i}.jpg`; anexos novos, inclusive de materiais antigos, em `comments/{slug}/{uuid}.{ext}`. Base pública: `https://pub-42970d75c5c14ba1bda61b8fc81c9d5d.r2.dev`, configurada em `config.js` sem credenciais. O endpoint S3 é exclusivo das operações de armazenamento.
+
+**Arquivos legados — Supabase Storage**, bucket público `mockups`: páginas em `{slug}/pages/{i}.jpg`, fotos em `{slug}/photos/*`. Os arquivos existentes permanecem nesse provedor. Reenviar o mesmo PDF troca as páginas usadas pelo material para o R2, preservando o slug, nome editado, publicação e comentários. Não há migração em massa automática.
+
+Continuam sendo guardadas **imagens renderizadas**, nunca o PDF original. Até 500 páginas por PDF e 7 MB por JPEG renderizado. O navegador renderiza o PDF e envia cada imagem diretamente ao R2 usando uma URL de PUT com dez minutos de validade, vinculada à chave, tipo e tamanho. A função da Vercel mantém as credenciais privadas e confirma todas as páginas antes de salvar a nova pasta no banco. Cada envio recebe uma pasta própria; falhas preservam a versão publicada. A comparação de `cover_version` recusa conclusões de envios concorrentes desatualizados.
+
+Versões anteriores e páginas de envios incompletos permanecem no bucket até a exclusão explícita do material; isso também preserva abas que ainda usam a versão anterior. A exclusão no painel remove suas pastas no R2 e no Supabase e os comentários. Excluir um comentário também remove os anexos da thread nos dois provedores. Não há rotina de limpeza em segundo plano.
+
+A política CORS do R2 permite `GET`, `HEAD` e `PUT` para `https://grid.vivoxmarketing.com.br`, `https://mockups-vivox.vercel.app`, `http://127.0.0.1:8130` e `http://localhost:8130`. Cabeçalhos: `Content-Type`, `Content-Length`, `Cache-Control`; expõe `ETag`, com cache de preflight de 3600 segundos. Previews com outro domínio precisam de uma origem explícita para testar uploads. [Referência do Cloudflare sobre CORS](https://developers.cloudflare.com/r2/buckets/cors/).
+
+O endereço `r2.dev` fornecido pelo usuário tem limites de requisição e é destinado a desenvolvimento. Para tráfego maior, vincular um domínio próprio ao bucket e ajustar `R2_PUBLIC_URL`. [Documentação de buckets públicos](https://developers.cloudflare.com/r2/buckets/public-buckets/).
 
 ### Migração (já aplicada em produção)
+
+A migração [20260909034739_arquivos_no_r2.sql](supabase/migrations/20260909034739_arquivos_no_r2.sql) adiciona `r2_prefix`, inicialmente nulo, e uma restrição que exige uma pasta pertencente ao slug do material. Não altera as políticas de acesso nem arquivos existentes.
 
 A versão das capas foi acrescentada pela migração [20260909030733_versionar_capas_dos_materiais.sql](supabase/migrations/20260909030733_versionar_capas_dos_materiais.sql), já aplicada ao projeto existente. O trigger `mockups_renovar_versao_capa` executa a função `renovar_versao_capa` com os privilégios do chamador e `search_path` vazio; não altera as políticas existentes. A renovação foi verificada como `anon` em transação revertida, inclusive para reenvio com quantidade e tamanho de páginas iguais.
 
@@ -173,16 +189,29 @@ alter table public.comments add column if not exists parent_id  uuid references 
 
 ## Rodar localmente
 
-Servidor estático na raiz do projeto:
+Node.js 24. O frontend continua em HTML/CSS/JS puro; as duas dependências do SDK S3 são usadas apenas pela função do servidor. Para preparar os assets e rodar a API local:
 
 ```bash
-python -m http.server 8130
+npm ci
+npm run dev
 ```
 
-As rotas limpas (`/portfolio`, `/m/SLUG`) **só existem no Vercel**. Localmente use:
-`viewer.html?m=SLUG` — o `viewer.js` aceita tanto o caminho quanto a query.
+O servidor local atende `http://127.0.0.1:8130`, incluindo `/portfolio`, `/admin`, `/m/SLUG` e `/api/storage`. Reexecute após alterar arquivos. `npm run build` copia somente a lista permitida de assets para `public/`; Vercel usa essa pasta para arquivos estáticos e empacota `api/storage.js` separadamente. Não servir a raiz do repositório com um servidor genérico: `.env*` e código de servidor não devem ficar disponíveis por HTTP.
 
-Verificações sem dependências adicionais: `node --test tests/*.test.cjs`. Os testes de navegador e de banco devem usar dados isolados ou transações revertidas, preservando os materiais reais.
+Configuração privada em `.env.r2.local`, ignorada pelo Git e pelo deploy:
+
+| Variável de servidor | Conteúdo |
+|---|---|
+| `R2_ENDPOINT` | endpoint S3 da conta, sem o nome do bucket |
+| `R2_BUCKET` | `grid-files` |
+| `R2_ACCESS_KEY_ID` | chave de acesso do R2 |
+| `R2_SECRET_ACCESS_KEY` | chave secreta do R2 |
+| `ADMIN_PASSWORD_SHA256` | SHA-256 da senha atual do painel |
+| `SESSION_SECRET` | segredo aleatório para assinar sessões e autorizações de envio |
+
+Cadastre as mesmas variáveis criptografadas no projeto existente da Vercel, sem prefixos públicos. Para retomar em outro computador, use a autenticação da Vercel e `vercel env pull .env.r2.local --environment=development` após vincular o projeto. Nunca copie valores para README, commits ou conversas. O token de administração geral do Cloudflare não é necessário à aplicação.
+
+Verificações após `npm ci`: `npm test`. Testes de navegador e de banco devem usar dados isolados ou transações revertidas, preservando os materiais reais.
 
 ## Deploy
 
@@ -206,6 +235,7 @@ Os domínios `grid.vivoxmarketing.com.br` e `mockups-vivox.vercel.app` apontam p
 
 ## Segurança (estado atual)
 
-- O login do admin é **client-side**: usuário `VIVOX` e o **hash SHA-256** da senha em `admin.js`. É uma trava de conveniência, não segurança real.
+- O login do admin usa o usuário `VIVOX` e a senha existente, agora verificada no servidor. A sessão dura 12 horas em cookie assinado `HttpOnly`, `SameSite=Strict` e `Secure` em produção. A flag antiga de `sessionStorage` não concede acesso. As operações da API exigem origem permitida e JSON; uploads/exclusões de materiais exigem sessão. As credenciais do R2 nunca entram nos assets.
+- Há limites básicos por IP/instância para login e anexos de comentários. Não constituem limitação global persistente; para isso, configurar regras no Firewall da Vercel. Comentários seguem o acesso por link já usado na aplicação.
 - A **RLS do Supabase é permissiva para `anon`** — o slug do material funciona como "token" de acesso. A chave publishable dá acesso de leitura/escrita aos dados.
 - O repositório está **público**, conforme consulta à API do GitHub em 2026-09-08. A descrição anterior como privado estava desatualizada. Para segurança de verdade seria preciso Supabase Auth + RLS restrita por usuário; o estado das políticas descrito acima ainda precisa ser revalidado no backend.

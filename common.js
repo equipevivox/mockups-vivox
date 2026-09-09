@@ -9,6 +9,34 @@ window.VX = (function(){
   const publicUrl = (path)=>`${cfg.SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
   const pageUrl = (slug,i,version)=>publicUrl(`${slug}/pages/${i}.jpg`)
     +(version ? "?cacheNonce="+encodeURIComponent(version) : "");
+  function materialPageUrl(material, index, fallbackVersion){
+    const prefix=material.r2_prefix;
+    if(prefix && /^materials\/[A-Z0-9_]+\/[a-f0-9-]{36}$/.test(prefix) && prefix.split("/")[1]===material.id){
+      return cfg.R2_PUBLIC_URL+"/"+prefix+"/pages/"+index+".jpg";
+    }
+    return pageUrl(encodeURIComponent(material.id),index,material.cover_version||fallbackVersion);
+  }
+  async function storageRequest(action, data={}){
+    const response=await fetch("/api/storage",{method:"POST",credentials:"same-origin",
+      headers:{"Content-Type":"application/json"},body:JSON.stringify({...data,action})});
+    let result;
+    try{ result=await response.json(); }catch(e){ throw new Error("Não foi possível acessar o serviço de arquivos. Tente novamente."); }
+    if(!response.ok) throw new Error(result.error||"Não foi possível acessar os arquivos.");
+    return result;
+  }
+  async function putFile(url, file){
+    // A URL vale por dez minutos e autoriza somente este arquivo, tipo e tamanho.
+    for(let attempt=0;attempt<3;attempt++){
+      try{
+        const response=await fetch(url,{method:"PUT",headers:{"Content-Type":file.type,
+          "Cache-Control":"public, max-age=31536000, immutable"},body:file,signal:AbortSignal.timeout(120000)});
+        if(response.ok) return;
+        if(response.status<500) throw new Error("O envio não foi autorizado. Entre novamente e tente enviar o arquivo.");
+      }catch(error){ if(attempt===2) throw new Error("Não foi possível enviar a imagem. Confira a conexão e tente novamente."); }
+      await new Promise(resolve=>setTimeout(resolve,500*(attempt+1)));
+    }
+    throw new Error("Não foi possível enviar a imagem. Tente novamente.");
+  }
   const esc = (s)=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
   const TYPE_LABEL = { revista:"Revista", mockup:"Mockup", folder:"Folder" };
@@ -112,22 +140,15 @@ window.VX = (function(){
     if(error) throw error;
   }
   async function deleteComment(c){
-    const photos = Array.isArray(c.photos)?c.photos:[];
-    const paths = photos.map(u=>{ const p=u.split("/public/"+BUCKET+"/")[1]; return p; }).filter(Boolean);
-    if(paths.length){ try{ await sb.storage.from(BUCKET).remove(paths); }catch(e){} }
-    const { error } = await sb.from("comments").delete().eq("id",c.id);
-    if(error) throw error;
+    await storageRequest("comment-delete",{slug:c.mockup_id,id:c.id});
   }
   async function uploadPhoto(slug, file){
-    const ext=(file.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";
-    const rnd=(crypto.randomUUID&&crypto.randomUUID())||(Date.now()+"-"+Math.random().toString(16).slice(2));
-    const path=`${slug}/photos/${rnd}.${ext}`;
-    const { error } = await sb.storage.from(BUCKET).upload(path, file, { contentType:file.type||"image/jpeg" });
-    if(error) throw error;
-    return publicUrl(path);
+    const signed=await storageRequest("photo-sign",{slug,size:file.size,type:file.type});
+    await putFile(signed.uploadUrl,file);
+    return signed.url;
   }
 
-  return { cfg, BUCKET, sb, $, publicUrl, pageUrl, esc, toast, fmtDate, nextFrame, preloadImages,
+  return { cfg, BUCKET, sb, $, publicUrl, pageUrl, materialPageUrl, storageRequest, putFile, esc, toast, fmtDate, nextFrame, preloadImages,
            makeSlug, TYPE_LABEL, normType, listMockups, listPublicMockups, notifyMaterialsChanged, getMockup, normalizeMaterialName, renameMockup,
            listComments, addComment, addReply, setResolved, deleteComment, uploadPhoto };
 })();

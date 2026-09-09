@@ -2,6 +2,18 @@
 
 Acrescente novas entradas no início, usando a data em `America/Cuiaba`. Registre o pedido, as alterações, decisões, verificações e pendências. O diff completo de cada entrega fica no histórico Git; este arquivo explica o contexto. Consulte [CONTEXTO.md](CONTEXTO.md) para o estado atual.
 
+## 2026-09-09 — Integração dos próximos arquivos ao Cloudflare R2 (ativação pendente)
+
+**Pedido:** vincular os arquivos e usar o bucket `grid-files` do Cloudflare a partir de agora.
+
+**Alterações:** API de arquivos na Vercel com SDK S3, URLs temporárias de PUT e sessão de admin verificada no servidor, preservando a senha atual. Novas páginas/anexos usam R2; materiais anteriores continuam no Supabase. Migração aplicada `20260909034739_arquivos_no_r2.sql` acrescenta a pasta R2 sem alterar registros existentes ou RLS. URLs centralizadas para capa, fundo, admin e visualizador. Cada reenvio cria pasta nova e só troca o ponteiro após confirmar todas as páginas; comparação da versão evita sobrescrita de envio concorrente. Nome, publicação, slug e comentários preservados. Exclusões cobrem os dois provedores e anexos da thread. CORS configurado no bucket para os domínios da aplicação e ambiente local, sem ampliar permissões do token. Credenciais fora do Git e assets. Frontend permanece nativo; empacotamento copia só arquivos públicos, e servidor local substitui o servidor genérico na raiz.
+
+**Decisões/limites:** mantém imagens JPEG renderizadas, não PDFs originais; sem migração em massa. Versões antigas/incompletas permanecem até exclusão explícita. Limites de páginas/anexos e validações no servidor; limitação por IP/instância é básica. URL pública r2.dev foi a fornecida pelo usuário; domínio próprio pode ser configurado depois. Metadados e comentários continuam no Supabase com seu modelo de acesso existente.
+
+**Verificações:** 20 testes automatizados passaram, cobrindo compatibilidade de URLs, sessão/origem, autorização de upload, tipos/tamanhos, preservação após envio incompleto, idempotência, concorrência, exclusão limitada e regressões do fundo/nomes. R2 real: preflight, PUT, GET público e DELETE. Edge: envio de PDF temporário privado de duas páginas, miniatura e leitura no visualizador, avanço 1 → 2, comentário com anexo exibido pelo R2, reenvio mantendo nome/publicação e trocando versão/pasta. Exclusão do comentário e material confirmada; zero arquivos de teste remanescentes e os cinco materiais reais intactos. Portfólio com quatro publicados e sem transbordamento; arquivos privados retornam 404 no servidor local. Advisor sem novos alertas da migração.
+
+**Pendência de ativação:** revisão automática bloqueou salvar credenciais R2 e segredos de autenticação como variáveis criptografadas na Vercel, exigindo autorização explícita do usuário para esse destino/payload. Pergunta enviada, ainda pendente. Variáveis não enviadas e integração não publicada em produção. Trabalho registrado em `codex/cloudflare-r2`; a `main` permanece na versão anterior para manter o painel funcionando. Após autorização, configurar variáveis no projeto existente, verificar o build/deployment, integrar à `main` e atualizar os registros.
+
 ## 2026-09-08 — Correção da atualização das capas e do parallax
 
 **Pedido:** corrigir capas de fundo que não atualizavam automaticamente e o parallax, usando o novo componente React enviado como referência.

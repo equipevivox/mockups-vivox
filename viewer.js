@@ -63,7 +63,7 @@
       state.aspect = mk.aspect || (60/49);
       const n = mk.num_pages||0;
       if(!n){ fail("Material sem páginas."); return; }
-      state.pages = Array.from({length:n},(_,i)=>VX.pageUrl(slug,i,mk.cover_version));
+      state.pages = Array.from({length:n},(_,i)=>VX.materialPageUrl(mk,i));
       state.total = n;
 
       $("docName").textContent = state.name.replace(/\.pdf$/i,"");
@@ -352,11 +352,13 @@
     placeBubble(cx,cy);
 
     const files=[];
-    const fileIn=document.createElement("input"); fileIn.type="file"; fileIn.accept="image/*"; fileIn.multiple=true; fileIn.hidden=true;
+    const fileIn=document.createElement("input"); fileIn.type="file"; fileIn.accept="image/jpeg,image/png,image/webp,image/gif"; fileIn.multiple=true; fileIn.hidden=true;
     box.appendChild(fileIn);
     box.querySelector(".b-attach").addEventListener("click",()=>fileIn.click());
     fileIn.addEventListener("change",()=>{
-      Array.from(fileIn.files).forEach(f=>{ if(!f.type.startsWith("image/"))return;
+      Array.from(fileIn.files).forEach(f=>{
+        if(!["image/jpeg","image/png","image/webp","image/gif"].includes(f.type)){ VX.toast("Use imagens JPG, PNG, WebP ou GIF.",true); return; }
+        if(f.size>10*1024*1024 || !f.size){ VX.toast("Cada imagem deve ter até 10 MB.",true); return; }
         if(files.length>=5){ VX.toast("Máximo de 5 imagens por comentário."); return; }
         files.push(f);
         const th=document.createElement("div"); th.className="th";

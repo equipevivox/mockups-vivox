@@ -11,7 +11,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <link rel="stylesheet" href="/style.css" />
-<link rel="stylesheet" href="/ui.css?v=20260909-2" />
+<link rel="stylesheet" href="/ui.css?v=20260909-3" />
 </head>
 <body>
 
@@ -24,7 +24,7 @@
       <div class="field"><label for="user">Usuário</label><input type="text" id="user" autocomplete="username" autocapitalize="off" spellcheck="false" /></div>
       <div class="field"><label for="pass">Senha</label><input type="password" id="pass" autocomplete="current-password" /></div>
       <button class="login-btn" type="submit">Entrar</button>
-      <div class="login-err" id="loginErr"></div>
+      <div class="login-err" id="loginErr" role="alert"></div>
     </form>
   </div>
 
@@ -111,8 +111,8 @@ alter table public.comments add column if not exists parent_id  uuid references 
   <input type="file" id="fileInput" accept="application/pdf,.pdf" hidden />
   <div class="toast" id="toast"></div>
 
-  <script src="/config.js"></script>
-  <script src="/common.js?v=20260909-2"></script>
-  <script src="/admin.js?v=20260909-2"></script>
+  <script src="/config.js?v=20260909-3"></script>
+  <script src="/common.js?v=20260909-3"></script>
+  <script src="/admin.js?v=20260909-3"></script>
 </body>
 </html>

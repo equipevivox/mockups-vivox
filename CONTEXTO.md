@@ -1,54 +1,57 @@
 # Contexto atual — Mockups VIVOX
 
-Última atualização: 2026-09-08 (America/Cuiaba).
+Última atualização: 2026-09-09 (America/Cuiaba).
 
-## Objetivo e continuidade
+## Continuidade e produção
 
-Portfólio público VIVOX com revistas, folders e mockups, visualizador folheável e comentários ancorados nas páginas. Arquitetura e operação no [README.md](README.md); regras permanentes em [AGENTS.md](AGENTS.md); entregas no [HISTORICO.md](HISTORICO.md).
+- Repositório público `https://github.com/equipevivox/mockups-vivox.git`. Sempre ler README, AGENTS, este resumo e HISTORICO; conferir Git/fetch antes de editar e publicar registros/commits ao concluir.
+- Produção: `https://grid.vivoxmarketing.com.br`, alias `https://mockups-vivox.vercel.app`.
+- Vercel: projeto existente **mockups-vivox**, ID `prj_gpzWlIxg6CuooSrEcKo2pTPiV6D8`, equipe `equipevivox-7341s-projects` (`team_14ydzpU22f732BVCX1lK6WA2`). GitHub conectado; push à `main` publica automaticamente.
+- Base da integração R2: `11ca82a`, conferida com fetch/pull, sem divergência. Trabalho atual na branch **`codex/cloudflare-r2`** para preservar produção enquanto a configuração de credenciais aguarda autorização.
+- Supabase compartilhado: `kthestvyzvbbpnsulned`. Metadados e comentários permanecem nele; não alterar tabelas de outras aplicações.
 
-O usuário pediu manter alterações e contexto no GitHub para continuar em outro computador. Sempre atualizar os registros, fazer commit e enviar ao remoto ao concluir. Não registrar segredos, dados de clientes ou conversas completas. Não depender de acesso à conversa anterior.
+## Integração Cloudflare R2 — pronta localmente, ativação pendente
 
-## Repositório e produção
+**Pedido:** usar o Cloudflare para arquivos a partir de agora. Não foi pedido transferir o site da Vercel nem migrar em massa arquivos antigos.
 
-- Remoto: `https://github.com/equipevivox/mockups-vivox.git`, público, branch `main` acompanhando `origin/main`. Base desta tarefa: `09fc00b`, já sincronizada antes das alterações.
-- Produção: `https://grid.vivoxmarketing.com.br`, alias `https://mockups-vivox.vercel.app`. O domínio antigo `mockups.vivoxmarketing.com.br` foi substituído pelo usuário; não há pendência de recuperá-lo.
-- Vercel: projeto existente **mockups-vivox**, ID `prj_gpzWlIxg6CuooSrEcKo2pTPiV6D8`, equipe `equipevivox-7341s-projects` (`team_14ydzpU22f732BVCX1lK6WA2`). Pasta vinculada localmente por `.vercel/project.json`.
-- GitHub conectado ao projeto Vercel; envios à `main` disparam produção automaticamente. Fluxo já confirmado em entregas anteriores; verificar o deployment e seu SHA após cada push.
-- Aplicação estática HTML/CSS/JS, sem build. Supabase: `kthestvyzvbbpnsulned`. Não instalar React, bundler ou dependências de frontend apenas para efeitos visuais.
-- Usar Git local autenticado para publicar. Cada computador precisa de sua autenticação. `.env*`, `.vercel` e `node_modules` ficam fora do Git; a CLI pode baixar variáveis locais.
+- Bucket existente **grid-files**, endpoint S3 da conta `897116310c751f22394896fed5202ebf`; base pública `https://pub-42970d75c5c14ba1bda61b8fc81c9d5d.r2.dev` em `config.js`.
+- Novas páginas: `materials/{slug}/{uuid}/pages/{i}.jpg`; novos anexos: `comments/{slug}/{uuid}.{ext}`. Continuam sendo guardadas imagens renderizadas, não PDFs originais.
+- Migração **`20260909034739_arquivos_no_r2.sql` aplicada**: coluna `mockups.r2_prefix`, nula para os cinco materiais existentes, e restrição vinculando a pasta ao slug. Nenhum arquivo existente foi movido/apagado. Políticas preservadas.
+- `VX.materialPageUrl(material, indice)` é usado no portfólio, fundo, admin e visualizador: R2 por pasta versionada ou Supabase legado com `cover_version`.
+- Cada envio recebe nova pasta. `/api/storage` confirma todas as páginas antes de atualizar os links; compara `cover_version` para recusar envios concorrentes desatualizados. Reenvio mantém nome, publicação, slug e comentários. Conclusão repetida da mesma versão é idempotente.
+- Upload de PDF exige sessão de admin; senha existente verificada no servidor, cookie assinado HttpOnly, SameSite Strict, Secure em produção, válido por 12 horas. A antiga flag `sessionStorage.vivox_admin` não autentica a API. RLS permissiva e revisão por link continuam como antes; isto não é uma revisão geral da segurança do Supabase.
+- URLs de PUT duram dez minutos, vinculadas à chave/tipo/tamanho. Limites: 500 páginas/PDF, 7 MB/JPEG, cinco anexos/comentário de até 10 MB em JPG/PNG/WebP/GIF.
+- CORS **configurado e verificado** no painel Cloudflare para os domínios grid e alias Vercel e localhost/127.0.0.1:8130. Credencial S3 permite objetos, mas não gestão de CORS; configuração feita na sessão já autenticada do usuário. Não ampliadas permissões do token.
+- Chaves somente em `.env.r2.local` ignorado e, após autorização, variáveis criptografadas da Vercel. Nunca registrar os valores. O token geral Cloudflare não é usado pela aplicação.
+- **Bloqueio concreto:** revisão automática rejeitou o envio dos segredos à Vercel por exigir autorização explícita para esse destino/payload. Pergunta enviada ao usuário, ainda sem resposta ao registrar este estado. Nenhuma dessas variáveis foi enviada à Vercel, nenhum deploy desta integração foi feito, e `main` continua na versão anterior.
 
-## Interface atual
+## Retomar e ativar
 
-- Logo **VIVOX Grid** centralizada no topo público, sem botão de admin; painel acessível diretamente em `/admin`. A mesma logo aparece no login e no cabeçalho do painel.
-- Botão no canto superior alterna tema claro/escuro apenas na página inicial. Escuro é o padrão, com fundo preto `#000000`; claro usa `#faf9f6` e letras escuras na mesma logo, preservando o dourado. A escolha em `vivox_theme` é aplicada antes dos estilos e sincronizada entre abas do navegador. Sem acesso ao armazenamento, a troca continua funcionando na aba.
-- Textos solicitados: **MATERIAIS VIVOX**, **Materiais criados para sua marca** e descrição orientando explorar materiais, folhear páginas e comentar. Filtros: Todos, Revistas, Folders e Mockups.
-- Textos, filtros e metadados centralizados. Capas de até 420px, galeria de até 1880px; linhas de 4/3/2/1 a partir de 1680/900/600/abaixo de 600px. Linhas incompletas centralizadas. Rodapé de ferramenta interna removido.
-- Fundo decorativo 3D com a primeira página de cada material público que tenha páginas. Sem capas duplicadas ou exemplos; posições livres e falhas de imagem ficam vazias. Novos materiais preservam as posições existentes. Posições absolutas por slot, com altura da matriz independente da quantidade, evitando deslocamento ao adicionar capas. Colunas movem-se em sentidos opostos, usando o elemento que realmente rola (documento ou contêiner) e o intervalo real de início a fim; mola e ângulos adaptados da nova referência enviada. Movimento reduzido, fundo sem interação e `aria-hidden` preservados.
-- Consultas a cada 15 segundos somente com a aba visível, ao voltar à aba e ao recuperar conexão. Envios, publicação, exclusão e mudanças de nome notificam outras abas via `VX.notifyMaterialsChanged(id)`. Filtros afetam somente os cartões.
+1. Confirmar se chegou a autorização explícita para armazenar na Vercel as chaves de acesso/secreta R2, hash da senha atual e segredo de sessão. Não considerar passagem de tempo como autorização.
+2. Após autorização, configurar as seis variáveis documentadas no README no projeto existente (criptografadas): `R2_ENDPOINT`, `R2_BUCKET`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `ADMIN_PASSWORD_SHA256`, `SESSION_SECRET`. Arquivo privado local disponível neste computador; em outro computador usar configuração segura, nunca o Git para segredos.
+3. Conferir o build da Vercel com a nova função e saída pública. Integrar a branch à `main` sem sobrescrever alterações concorrentes; publicar e verificar SHA remoto/deployment READY, `/api/storage`, rotas e ausência de arquivos privados por HTTP.
+4. Atualizar este estado e o histórico com o resultado da ativação. Não declarar a integração ativa em produção antes dessa verificação.
 
-## Edição do nome
+## Desenvolvimento e limites
 
-- No admin, **Renomear → Nome exibido → Salvar nome** altera `mockups.name`, usado pela página inicial e pelo visualizador. Não exige migração.
-- Até 120 caracteres; remove espaços excedentes e extensão `.pdf`. Nome vazio é recusado. Erros preservam a entrada, há estado de salvamento, cancelamento por Escape e retorno de foco ao botão.
-- Atualização limitada a `name`, filtrada por `id`, com `.select("id,name").single()` para confirmar a linha gravada. Slug, arquivos, links, comentários e publicação são preservados.
-- Reenvio consulta o material pelo slug e atualiza apenas os dados das páginas, preservando o nome editado e `is_public`. Novos arquivos são inseridos com o nome original do PDF.
+- Frontend HTML/CSS/JS puro, sem React ou bundler. SDK S3 em dependências de servidor com versões fixadas/lockfile.
+- `npm ci`, `npm run dev`: servidor Node local com API, somente assets permitidos. `npm run build` copia esses assets para `public/`, ignorado. Não usar servidor estático genérico na raiz que possa expor `.env*`.
+- Servidor local de teste foi iniciado com senha/segredo exclusivos e descartáveis; não são a senha de produção. Reiniciar normalmente antes de uso real.
+- Versões anteriores e envios incompletos permanecem até exclusão explícita do material; não há limpeza automática. A exclusão usa R2 API e Supabase Storage API. `r2.dev` possui limites de requisição; domínio próprio de arquivos é um possível próximo passo.
+- Limites por IP são básicos e por instância; proteção global requer Firewall. Não há novos alertas do advisor da migração; avisos anteriores do projeto compartilhado permanecem fora desta tarefa.
 
-## Verificações e limites
+## Verificações da integração
 
-- Dez testes automatizados (`node --test tests/*.test.cjs`): validação e edição de nomes, posições estáveis, exclusão de privados/vazios, respostas atrasadas, falha e nova tentativa de imagem, scroll curto, scroll em contêiner, inversão, movimento reduzido e interrupção da animação. Sintaxe JavaScript e diff conferidos.
-- Edge: temas em desktop 1440 × 1000 e celular 390 × 844; persistência após recarregar; retorno ao preto absoluto em 320px; logo centralizada, botão com área de 44px e sem transbordamento horizontal.
-- Login e painel com logo verificados em desktop/celular. Testes isolados com respostas simuladas: nome vazio, erro de rede e nova tentativa, caracteres especiais, nome com 120 caracteres, Escape, atualização da página inicial, preservação do link, notificação entre abas, reenvio preservando nome/publicação e envio novo com nome do arquivo.
-- Na entrega de nomes, nenhum material real foi renomeado ou enviado pelos testes. Na correção do fundo, foi aplicada a migração `20260909030733_versionar_capas_dos_materiais.sql`, que adiciona `cover_version` e o trigger. Verificação como `anon` em transação revertida confirmou renovação após reenvio e preservação da versão ao editar nome/publicação. Nenhuma página real foi enviada ou substituída pelos testes e as políticas existentes foram preservadas.
-- Detector visual funcionou em modo limitado (parser HTML indisponível) e apontou apenas a fonte Inter, preservada pela identidade VIVOX. Inspeção visual feita no navegador.
-- Entregas anteriores verificaram filtros, estados vazios, falha de imagem/rede, novos materiais, posições estáveis e movimento reduzido. Preservar essas regras.
-- Corrigida a limitação de atualização entre computadores: `cover_version` agora vem do banco e compõe `cacheNonce` nas URLs de capa e páginas. O trigger renova a versão após reenvio, mesmo quando os dados das páginas continuam iguais. Abas já abertas recebem a nova versão na consulta periódica, sem recarregar. Edições de nome/publicação preservam a versão.
-- Autenticação e permissões herdadas estão documentadas no README; esta tarefa não alterou esse modelo.
+- **20 testes automatizados passaram**: nomes, URLs dos dois provedores, fundo/parallax, sessão, origem, assinatura, tamanho/tipo, envio incompleto, conclusão idempotente, concorrência e exclusão limitada às pastas/threads corretas.
+- R2 real: PUT assinado, preflight CORS, GET público e exclusão de objeto temporário, todos confirmados.
+- Edge local: PDF temporário de duas páginas enviado pelo painel ao R2, material inicialmente privado; capa carregada, ambas as páginas carregadas no visualizador, avanço 1 → 2. Comentário com imagem enviado e foto pública exibida. Reenvio preservou nome editado e publicação e alterou pasta/cover_version.
+- Exclusão pelo mesmo serviço conferida: anexo passou a 404, material removido, zero arquivos dos testes nas pastas R2. Banco voltou a cinco materiais existentes com `r2_prefix` nulo; nenhum material real foi editado.
+- Portfólio preservado com quatro materiais publicados, capas carregadas, teste ausente e sem transbordamento. Inspeção em desktop e 390×844. Arquivos `.env.r2.local`, `server/auth.cjs` e `package.json` retornam 404 no servidor local.
 
-- Correção do fundo verificada no Edge em 1440 × 1000 e 390 × 844. Colunas em sentidos opostos; fim do scroll alcança o estado final da perspectiva, inclusive em contêiner interno; celular com duas colunas e sem transbordamento horizontal. Preferência de movimento reduzido elimina transformações inline.
-- Teste de atualização automática em iframe isolado, com scripts reais e dados simulados: somente a versão da capa mudou, sem aviso entre abas ou recarga; nova URL carregada em 15,5 segundos. Nenhum timer de consulta ficou ativo com a aba marcada como oculta; retorno disparou nova consulta. Adicionar 16 capas de teste preservou as coordenadas das quatro existentes (deslocamento 0).
-- Visualizador verificado após concluir o carregamento: 24 páginas, avanço da página 1 para 2 e URLs versionadas, sem erros de execução. O motor de folheamento não foi alterado.
-- Pré-carregamento das capas é independente da posição transformada. Resposta de versão antiga é descartada; falha/timeout deixa o espaço vazio e a consulta seguinte tenta com nova chave. Requisições inalteradas não baixam imagens novamente.
+## Interface e regras preservadas
 
-## Retomada
-
-Clonar ou atualizar a branch, ler os três registros e conferir Git antes de editar. Após publicar alterações, verificar o SHA no remoto e o deployment de produção no projeto existente.
+- Logo VIVOX Grid centralizada, sem botão de admin; `/admin` direto, com logo no login/painel. Tema claro/escuro na inicial, preto absoluto por padrão, preferência em `vivox_theme`.
+- Texto principal “Materiais criados para sua marca”, eyebrow MATERIAIS VIVOX, filtros Todos/Revistas/Folders/Mockups. Textos centralizados; revistas grandes, linhas 4/3/2/1; sem rodapé.
+- Nome exibido editável até 120 caracteres, preservando slug/links. Fundo usa primeira página real dos materiais públicos, sem duplicar ou preencher com exemplos, posições estáveis e vazio em falhas; filtros só alteram cartões.
+- Consulta a cada 15 segundos somente em aba visível, mais foco/conexão/avisos entre abas. Fundo mantém parallax baseado no contêiner real, movimento reduzido, aria-hidden e ausência de interação.
+- turn.js: páginas com tamanho explícito e imagens carregadas antes do init; nunca display:contents no pai; pins dentro da página; disable no modo comentário. PDF worker sempre same-origin. Assets do viewer absolutos; nunca cleanUrls:true.

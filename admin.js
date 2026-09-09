@@ -1,9 +1,7 @@
 /* VIVOX · Painel admin — envio de material, publicação no portfólio e gestão */
 (function(){
   "use strict";
-  const VX = window.VX, $ = VX.$, sb = VX.sb, BUCKET = VX.BUCKET;
-  const ADMIN_USER = "VIVOX";
-  const ADMIN_HASH = "dfcce3872a8fe394f4d91a7c4f016765e04a4ab1b4d054d90fe686fced31705d";
+  const VX = window.VX, $ = VX.$, sb = VX.sb;
   const A4_ASPECT = 297/210;
 
   // PDF.js com worker local (same-origin) — cross-origin trava a thread principal
@@ -12,20 +10,21 @@
   const loader=$("loader"), loaderSub=$("loaderSub"), progressBar=$("progressBar");
   let pendingFile=null, items=[], counts={};
 
-  async function sha256(str){
-    const buf=await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
-    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
-  }
-
   // ================= login =================
   $("loginForm").addEventListener("submit",async(e)=>{
     e.preventDefault();
-    const u=$("user").value.trim(), p=$("pass").value;
-    const ok = u.toUpperCase()===ADMIN_USER && (await sha256(p))===ADMIN_HASH;
-    if(!ok){ $("loginErr").textContent="Usuário ou senha inválidos."; return; }
-    sessionStorage.setItem("vivox_admin","1"); enter();
+    const button=e.currentTarget.querySelector('[type="submit"]');
+    button.disabled=true; $("loginErr").textContent="";
+    try{
+      await VX.storageRequest("login",{user:$("user").value.trim(),password:$("pass").value});
+      $("pass").value=""; enter();
+    }catch(error){ $("loginErr").textContent=error.message; }
+    finally{ button.disabled=false; }
   });
-  $("logoutBtn").addEventListener("click",()=>{ sessionStorage.removeItem("vivox_admin"); location.reload(); });
+  $("logoutBtn").addEventListener("click",async()=>{
+    try{ await VX.storageRequest("logout"); location.reload(); }
+    catch(error){ VX.toast(error.message,true); }
+  });
   $("refreshBtn").addEventListener("click",load);
   function enter(){ $("loginWrap").style.display="none"; $("dash").classList.add("show"); load(); }
 
@@ -69,7 +68,7 @@
       const link=location.origin+"/m/"+encodeURIComponent(m.id);
       const card=document.createElement("div"); card.className="card card--adm";
       card.innerHTML=`
-        <div class="adm-thumb" style="background-image:url('${VX.pageUrl(m.id,0,m.cover_version)}')"></div>
+        <div class="adm-thumb" style="background-image:url('${VX.materialPageUrl(m,0)}')"></div>
         <div class="meta">
           <div class="name"><span class="pf-type pf-type--${m.type}">${VX.TYPE_LABEL[m.type]}</span> <span class="material-name">${VX.esc((m.name||m.id).replace(/\.pdf$/i,""))}</span></div>
           <div class="sub">
@@ -166,16 +165,10 @@
     }
   }
 
-  async function removeFolder(prefix){
-    const { data } = await sb.storage.from(BUCKET).list(prefix,{limit:1000});
-    if(data && data.length) await sb.storage.from(BUCKET).remove(data.map(o=>`${prefix}/${o.name}`));
-  }
   async function del(m){
     if(!confirm(`Excluir "${m.name||m.id}" e todos os seus comentários e arquivos? Não dá para desfazer.`)) return;
     try{
-      await removeFolder(`${m.id}/pages`); await removeFolder(`${m.id}/photos`);
-      const { error } = await sb.from("mockups").delete().eq("id", m.id);
-      if(error) throw error;
+      await VX.storageRequest("material-delete",{slug:m.id,version:m.cover_version});
       VX.notifyMaterialsChanged(m.id);
       VX.toast("Material excluído."); load();
     }catch(err){ console.error(err); VX.toast("Erro ao excluir — "+(err.message||err), true); }
@@ -201,6 +194,7 @@
   async function renderPdf(buf){
     const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
     const num = pdf.numPages, images=[];
+    if(num>500) throw new Error("Envie um PDF com até 500 páginas.");
     for(let i=1;i<=num;i++){
       const page=await pdf.getPage(i);
       const base=page.getViewport({scale:1});
@@ -226,13 +220,11 @@
     for(let k=0;k<bin.length;k++)u8[k]=bin.charCodeAt(k);
     return new Blob([u8],{type:mime});
   }
-  async function uploadPages(slug, images){
-    try{ const { data:old } = await sb.storage.from(BUCKET).list(slug+"/pages");
-      if(old&&old.length) await sb.storage.from(BUCKET).remove(old.map(o=>`${slug}/pages/${o.name}`)); }catch(e){}
+  async function uploadPages(ticket, images){
     for(let i=0;i<images.length;i++){
-      const { error } = await sb.storage.from(BUCKET).upload(`${slug}/pages/${i}.jpg`, dataURLtoBlob(images[i]),
-        { contentType:"image/jpeg", upsert:true });
-      if(error) throw error;
+      const blob=dataURLtoBlob(images[i]);
+      const signed=await VX.storageRequest("upload-sign",{ticket,index:i,size:blob.size});
+      await VX.putFile(signed.uploadUrl,blob);
       progressBar.style.width=Math.round(((i+1)/images.length)*100)+"%";
       loaderSub.textContent=`Enviando página ${i+1} de ${images.length}…`;
     }
@@ -258,14 +250,12 @@
     const slug=VX.makeSlug(file.name);
     loaderSub.textContent="Enviando para a nuvem…"; progressBar.style.width="0%";
     try{
-      const existing=await VX.getMockup(slug);
-      await uploadPages(slug, out.images);
-      const row={ num_pages:out.images.length, aspect:out.aspect, type, expires_at:null };
-      // O trigger renova cover_version após o envio; nome e publicação são preservados.
-      const query=existing ? sb.from("mockups").update(row).eq("id",slug)
-        : sb.from("mockups").insert({id:slug,name:file.name,...row});
-      const { error } = await query.select("id").single();
-      if(error) throw error;
+      const {ticket}=await VX.storageRequest("upload-start",{slug,name:file.name,
+        num_pages:out.images.length,aspect:out.aspect,type});
+      await uploadPages(ticket,out.images);
+      loaderSub.textContent="Conferindo as páginas enviadas…";
+      // A API só atualiza os links após confirmar todas as imagens, preservando nome/publicação.
+      await VX.storageRequest("upload-complete",{ticket});
       loader.classList.remove("show");
       VX.toast("Material enviado: "+slug);
       VX.notifyMaterialsChanged(slug);
@@ -274,5 +264,6 @@
       VX.toast("Erro ao salvar — "+(err.message||err), true); }
   }
 
-  if(sessionStorage.getItem("vivox_admin")==="1") enter();
+  VX.storageRequest("session").then(result=>{if(result.authenticated) enter();})
+    .catch(()=>{ $("loginErr").textContent="Não foi possível verificar a sessão. Tente entrar novamente."; });
 })();

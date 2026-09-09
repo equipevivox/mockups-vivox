@@ -1,7 +1,7 @@
 /* VIVOX · Portfólio público — grade de materiais marcados como públicos */
 (function(){
   "use strict";
-  const { $, pageUrl, esc, toast, TYPE_LABEL, listPublicMockups } = window.VX;
+  const { $, materialPageUrl, esc, toast, TYPE_LABEL, listPublicMockups } = window.VX;
   const grid = $("pfGrid");
   const background=window.VX.portfolioBackground;
   const versions=new Map();
@@ -10,7 +10,7 @@
   let loading=false, loaded=false, refreshTimer=0, refreshPending=false, signature="", active=true;
 
   // A versão vem do banco: um reenvio também chega às abas abertas em outros computadores.
-  const coverUrl=m=>pageUrl(encodeURIComponent(m.id),0,m.cover_version||versions.get(m.id)||coverSession);
+  const coverUrl=m=>materialPageUrl(m,0,versions.get(m.id)||coverSession);
 
   document.querySelectorAll(".pf-chip").forEach(chip=>{
     chip.addEventListener("click",()=>{

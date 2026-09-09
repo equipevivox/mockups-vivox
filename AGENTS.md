@@ -25,8 +25,9 @@ O registro é atualizado durante o trabalho do agente; não é um serviço de si
 
 ## Como trabalhar aqui
 
-- **Sem build.** HTML/CSS/JS puro servido estaticamente. Não introduza bundler, framework ou `node_modules` sem necessidade real.
-- Rodar local: `python -m http.server 8130` na raiz.
+- **Frontend sem framework/bundler.** HTML/CSS/JS puro. O SDK S3 é uma dependência exclusiva do servidor para assinar uploads no R2.
+- `npm ci`, `npm run dev` na raiz. O servidor local usa `.env.r2.local` e serve somente os arquivos públicos. **Não servir a raiz com `python -m http.server`**, pois agora existem arquivos privados locais.
+- `npm run build` apenas copia uma lista permitida de assets para `public/`; não transpila o frontend. Nunca incluir `.env*`, `server/`, testes ou documentação nessa saída.
 - Deploy: `vercel deploy . --prod --yes` (o alias de produção atualiza sozinho).
 - Escreva em **português do Brasil** — comentários de código, textos de interface e mensagens de commit.
 - Toda a interface segue a identidade VIVOX: dourado `#CCB691 → #876224`, fonte Inter e as variáveis CSS de `style.css`. O portfólio oferece tema claro e escuro; o padrão escuro usa **preto absoluto `#000000`** no fundo e nas sobreposições. Preserve a escolha em `vivox_theme`; painel e visualizador mantêm os fundos escuros originais. Não reintroduzir o rodapé “ferramenta interna de revisão de materiais”.
@@ -57,9 +58,18 @@ O worker **precisa ser same-origin** (`/pdf.worker.min.js`, versionado no repo).
 
 - O `id` do material é um **slug derivado do nome do arquivo** (MAIÚSCULAS, sem acento, espaços → `_`). Reenviar um PDF com o mesmo nome **sobrescreve** o material.
 - `mockups.name` é o **nome exibido editável**, com limite de 120 caracteres na edição. Renomear não altera slug, links, páginas ou comentários. Ao reenviar o PDF, preserve o nome editado e `is_public`; atualize somente os dados das páginas. Novos materiais recebem inicialmente o nome do arquivo.
-- `mockups.cover_version` é gerado pelo banco. O trigger renova a versão em `UPDATE OF num_pages, aspect`, inclusive quando os valores permanecem iguais. Mantenha essa atualização **depois** de concluir o envio das páginas; use `VX.pageUrl(slug, indice, cover_version)` para renovar o cache em todos os computadores. Renomear ou publicar não deve alterar a versão.
+- `mockups.cover_version` é gerado pelo banco. O trigger renova a versão em `UPDATE OF num_pages, aspect`, inclusive quando os valores permanecem iguais. Mantenha essa atualização **depois** de concluir o envio das páginas. Use `VX.materialPageUrl(material, indice)` em todos os pontos: resolve R2 por `r2_prefix` ou Supabase legado com `cover_version`. Renomear ou publicar não deve alterar a versão.
 - São guardadas as **páginas renderizadas em JPEG**, nunca o PDF original.
 - Comentários sem `x`/`y` são anteriores ao recurso de pins: aparecem só na lista lateral, sem marcador na página. Trate esse caso como válido.
+
+## Arquivos no Cloudflare R2
+
+- Novos envios e anexos usam o bucket `grid-files`; credenciais somente em variáveis de servidor. Nunca escrever segredos no código, docs, logs, Git ou assets públicos.
+- `r2_prefix` nulo mantém os materiais legados no Supabase. Não migrar ou apagar os arquivos anteriores implicitamente. Reenvios usam uma pasta R2 nova e a API confirma todas as páginas antes de trocar os links, com comparação de `cover_version` para evitar sobrescrita concorrente.
+- `/api/storage` autentica uploads de materiais por cookie HttpOnly assinado. A senha existente é conferida no servidor; `sessionStorage.vivox_admin` não autentica a API.
+- URLs de PUT duram dez minutos e vinculam chave, tipo e tamanho. CORS permite apenas os domínios configurados; não usar `*` por conveniência.
+- Versões anteriores e envios incompletos são preservados até exclusão explícita do material. Não apagar uma pasta após falha ambígua de conclusão; o banco pode já ter confirmado o envio.
+- Exclusões usam API do R2 e Storage API do Supabase, limitadas às pastas do material. Comentários continuam acessíveis por link conforme o modelo existente; RLS não foi ampliada ou corrigida nesta integração.
 
 ## Ao mexer no fundo do portfólio
 
