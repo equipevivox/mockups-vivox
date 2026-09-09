@@ -2,6 +2,14 @@
 
 Acrescente novas entradas no início, usando a data em `America/Cuiaba`. Registre o pedido, as alterações, decisões, verificações e pendências. O diff completo de cada entrega fica no histórico Git; este arquivo explica o contexto. Consulte [CONTEXTO.md](CONTEXTO.md) para o estado atual.
 
+## 2026-09-09 — Registro para continuar em outra máquina
+
+**Pedido:** salvar as alterações e informações no GitHub para trabalhar em outro computador na próxima sessão.
+
+**Registro:** acrescentado ao contexto o roteiro de retomada, com a main para a versão publicada e codex/cloudflare-r2 para continuar a integração de arquivos. A branch R2 já contém a identidade visual publicada; preservada a pendência de autorização das variáveis na Vercel. Referências da entrega visual e do deployment incluídas. Credenciais e sessões locais permanecem fora do Git.
+
+**Verificações:** fetch e pull --ff-only nas duas branches, inicialmente limpas e sem divergência; alterações desta tarefa restritas a CONTEXTO.md e HISTORICO.md, com revisão do diff e envio ao GitHub. Nenhuma alteração no código, em materiais, comentários ou configurações de produção.
+
 ## 2026-09-09 — Favicon, marca animada e painel com a identidade da inicial
 
 **Pedido:** usar o V enviado como ícone da guia, animar sutilmente os quadradinhos da marca e manter no painel o estilo e as cores da página inicial.
