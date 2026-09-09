@@ -1,4 +1,4 @@
-/* Preferência de tema exclusiva da página inicial, aplicada antes dos estilos. */
+/* Tema compartilhado pelo portfólio e painel, aplicado antes dos estilos. */
 (function(){
   "use strict";
   const key="vivox_theme", root=document.documentElement;
@@ -17,7 +17,7 @@
   apply(saved);
   document.addEventListener("DOMContentLoaded",()=>{
     apply(root.dataset.theme);
-    document.getElementById("themeToggle").addEventListener("click",()=>{
+    document.getElementById("themeToggle")?.addEventListener("click",()=>{
       apply(root.dataset.theme==="light"?"dark":"light");
       try{ localStorage.setItem(key,root.dataset.theme); }catch(e){}
     });

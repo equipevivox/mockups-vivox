@@ -39,9 +39,11 @@ As rotas limpas vêm de `vercel.json` (`rewrites`).
 
 O topo público usa a logo **VIVOX Grid**, centralizada, sem botão de administração. O painel é acessado diretamente por `/admin`.
 
-O botão no canto superior alterna os temas **claro e escuro** da página inicial. O padrão é escuro, com preto absoluto; a escolha fica salva no navegador em `localStorage` (`vivox_theme`) e é aplicada antes dos estilos para evitar flashes. O tema claro usa uma versão da mesma logo com letras escuras, mantendo o dourado. O painel e o visualizador mantêm seu tema original.
+O botão no canto superior alterna os temas **claro e escuro** da página inicial e do painel, incluindo o login. O padrão é escuro, com preto absoluto; a escolha fica salva no navegador em `localStorage` (`vivox_theme`) e é aplicada antes dos estilos para evitar flashes. O tema claro usa uma versão da mesma logo com letras escuras, mantendo o dourado. O painel usa a mesma base preta ou clara, com superfícies neutras e ações douradas. O visualizador mantém seu tema original.
 
-No painel, a logo VIVOX Grid aparece no login e no cabeçalho. Use **Renomear → Nome exibido → Salvar nome** em cada material para mudar o título que aparece no portfólio e ao abrir o material. O campo aceita até 120 caracteres, remove espaços excedentes e a extensão `.pdf`. A alteração usa `mockups.name`, preserva o slug, os links, as páginas, os comentários e a publicação. Reenviar o PDF com o mesmo nome de arquivo também preserva esse título; arquivos novos começam com o nome do PDF. Falhas ao salvar mantêm o texto digitado para nova tentativa.
+A logo VIVOX Grid fica centralizada também no topo do painel e do login. Seus quatro quadradinhos têm uma breve animação sutil a cada oito segundos, interrompida fora da tela, em abas ocultas e com movimento reduzido. O SVG original continua como alternativa caso o aprimoramento não carregue. O ícone `V.svg` enviado pelo usuário está preservado em `assets/vivox-icon.svg`; uma versão com enquadramento quadrado, sem alterar o desenho, é o favicon estático das três páginas.
+
+No painel, use **Renomear → Nome exibido → Salvar nome** em cada material para mudar o título que aparece no portfólio e ao abrir o material. O campo aceita até 120 caracteres, remove espaços excedentes e a extensão `.pdf`. A alteração usa `mockups.name`, preserva o slug, os links, as páginas, os comentários e a publicação. Reenviar o PDF com o mesmo nome de arquivo também preserva esse título; arquivos novos começam com o nome do PDF. Falhas ao salvar mantêm o texto digitado para nova tentativa.
 
 > ⚠️ **Não usar `cleanUrls: true` no `vercel.json`** — ele anula os `rewrites` e `/portfolio` e `/m/:slug` passam a dar 404.
 > ⚠️ Em `viewer.html` os assets **precisam de caminho absoluto** (`/common.js`, `/lib/...`). Com caminho relativo, em `/m/SLUG` eles resolvem para `/m/common.js` → 404 (o erro aparece como `Unexpected token '<'`).
@@ -105,12 +107,16 @@ HTML/CSS/JS puro, sem build.
 index.html  + portfolio.js   portfólio público
 viewer.html + viewer.js      visualização + comentários
 admin.html  + admin.js       painel (login, upload, nomes, publicação)
-theme.js                     preferência claro/escuro da página inicial
+theme.js                     preferência claro/escuro compartilhada pelo portfólio e admin
 common.js                    window.VX: cliente Supabase e helpers
 portfolio-background.js     distribuição das capas e movimento do fundo
 portfolio-background.css    perspectiva, sobreposição e responsividade do fundo
 style.css                    base e identidade
 ui.css                       portfólio, balões de comentário e admin
+assets/identity.css           cores compartilhadas, painel e animação da marca
+assets/brand.js               anima os quatro quadrados dos SVGs locais
+assets/favicon.svg            V e quadradinhos na guia do navegador
+assets/vivox-icon.svg         ícone original fornecido pelo usuário
 assets/vivox-grid.svg         logo original no portfólio e no painel
 assets/vivox-grid-light.svg   mesma logo com letras escuras para o tema claro
 tests/material-name.test.cjs validação de nomes e gravação sem alterar o slug
