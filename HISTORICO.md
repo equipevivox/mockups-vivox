@@ -2,6 +2,16 @@
 
 Acrescente novas entradas no início, usando a data em `America/Cuiaba`. Registre o pedido, as alterações, decisões, verificações e pendências. O diff completo de cada entrega fica no histórico Git; este arquivo explica o contexto. Consulte [CONTEXTO.md](CONTEXTO.md) para o estado atual.
 
+## 2026-09-08 — Temas claro/escuro, logo no admin e edição de nomes
+
+**Pedido:** adicionar botão de tema claro/escuro à página inicial, incluir a logo no admin e permitir ajustar o nome exibido dos materiais.
+
+**Alterações:** botão acessível no canto superior, preservando a logo centralizada; preferência local aplicada antes dos estilos e sincronizada entre abas, mantendo preto absoluto como padrão. Tema claro com contraste próprio para textos, capas decorativas e versão da logo com letras escuras. Logo original no login e no cabeçalho do painel. Opção Renomear em cada material, formulário com limite de 120 caracteres, validação, salvamento, erros com retenção do texto e cancelamento por teclado. URLs dos assets alterados renovadas.
+
+**Decisões:** reutilizado `mockups.name`, já exibido no portfólio e no visualizador, sem migração. Atualização limitada ao nome, com confirmação da linha retornada. Slug, links, arquivos e comentários preservados. Reenvio do PDF atualiza apenas os dados das páginas, preservando o nome escolhido e a publicação; arquivos novos continuam recebendo o nome do PDF. Mudanças de nome notificam outras abas do portfólio. README e instruções permanentes atualizados.
+
+**Verificações:** quatro testes automatizados de validação e gravação; sintaxe JavaScript e diff; temas, logo e formulário no Edge em 1440 × 1000, 390 × 844 e verificações em 320px. Sem transbordamento horizontal. Persistência do tema após recarregar e retorno ao fundo preto confirmados. Com dados simulados isolados do backend, verificados nome vazio, falha de rede, nova tentativa, caracteres especiais, nome com 120 caracteres, Escape, exibição no portfólio, link preservado, notificação, reenvio e novo envio. Consultas ao Supabase confirmaram o schema e a política existentes. Nenhum material real foi alterado pelos testes. Detector visual em modo limitado apontou somente Inter, mantida pela identidade VIVOX.
+
 ## 2026-09-08 — Logo VIVOX Grid centralizada e remoção do botão de admin
 
 **Pedido:** retirar o botão de admin do canto e deixar a logo no centro do topo, utilizando o arquivo `VIVOX Grid.svg` enviado pelo usuário.

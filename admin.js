@@ -71,18 +71,25 @@
       card.innerHTML=`
         <div class="adm-thumb" style="background-image:url('${VX.pageUrl(m.id,0)}')"></div>
         <div class="meta">
-          <div class="name"><span class="pf-type pf-type--${m.type}">${VX.TYPE_LABEL[m.type]}</span> ${VX.esc((m.name||m.id).replace(/\.pdf$/i,""))}</div>
+          <div class="name"><span class="pf-type pf-type--${m.type}">${VX.TYPE_LABEL[m.type]}</span> <span class="material-name">${VX.esc((m.name||m.id).replace(/\.pdf$/i,""))}</span></div>
           <div class="sub">
             <span class="pill"><b>${m.num_pages||0}</b> páginas</span>
             <span class="pill"><b>${nc}</b> comentário${nc===1?"":"s"}</span>
             <span class="pill">Criado: <b>${VX.fmtDate(m.created_at)}</b></span>
           </div>
           <label class="pub-toggle"><input type="checkbox" ${pub?"checked":""} data-act="pub"> <span>Mostrar no portfólio</span></label>
+          <form class="rename-form" hidden novalidate>
+            <div class="field"><label>Nome exibido<input name="materialName" type="text" maxlength="120" required autocomplete="off" /></label></div>
+            <p class="rename-help">Este nome aparece na página inicial e ao abrir o material.</p>
+            <p class="rename-error" role="alert"></p>
+            <div class="rename-actions"><button class="btn btn-gold" type="submit">Salvar nome</button><button class="btn" type="button" data-act="cancel-rename">Cancelar</button></div>
+          </form>
         </div>
         <div class="acts">
           <a class="btn" href="/m/${encodeURIComponent(m.id)}" target="_blank" rel="noopener">Abrir</a>
           <a class="btn" href="/m/${encodeURIComponent(m.id)}?comment=1" target="_blank" rel="noopener">Comentar</a>
           <button class="btn" data-act="copy">Copiar link</button>
+          <button class="btn" data-act="rename" aria-expanded="false">Renomear</button>
           <button class="btn btn-danger" data-act="del">Excluir</button>
         </div>`;
       card.querySelector('[data-act="copy"]').addEventListener("click",async()=>{
@@ -91,7 +98,56 @@
       });
       card.querySelector('[data-act="del"]').addEventListener("click",()=>del(m));
       card.querySelector('[data-act="pub"]').addEventListener("change",(e)=>togglePublic(m,e.target));
+      wireRename(card,m);
       $("cards").appendChild(card);
+    });
+  }
+
+  function wireRename(card,m){
+    const button=card.querySelector('[data-act="rename"]'), form=card.querySelector(".rename-form");
+    const input=form.elements.materialName, error=form.querySelector(".rename-error"), save=form.querySelector('[type="submit"]');
+    const hintId="rename-help-"+m.id, errorId="rename-error-"+m.id;
+    form.id="rename-"+m.id;
+    form.querySelector(".rename-help").id=hintId; error.id=errorId;
+    input.setAttribute("aria-describedby",hintId+" "+errorId);
+    button.setAttribute("aria-controls",form.id);
+    let saving=false;
+    function close(){
+      if(saving) return;
+      form.hidden=true; button.setAttribute("aria-expanded","false"); button.focus();
+    }
+    button.addEventListener("click",()=>{
+      if(saving) return;
+      if(!form.hidden){ close(); return; }
+      input.value=(m.name||m.id).replace(/\.pdf$/i,"");
+      error.textContent=""; input.removeAttribute("aria-invalid");
+      form.hidden=false; button.setAttribute("aria-expanded","true"); input.focus(); input.select();
+    });
+    form.querySelector('[data-act="cancel-rename"]').addEventListener("click",close);
+    form.addEventListener("keydown",event=>{ if(event.key==="Escape"){event.preventDefault();close();} });
+    input.addEventListener("input",()=>{error.textContent="";input.removeAttribute("aria-invalid");});
+    form.addEventListener("submit",async event=>{
+      event.preventDefault(); if(saving) return;
+      let name;
+      try{ name=VX.normalizeMaterialName(input.value); }
+      catch(err){error.textContent=err.message;input.setAttribute("aria-invalid","true");input.focus();return;}
+      if(name===m.name){close();return;}
+      saving=true; error.textContent=""; form.setAttribute("aria-busy","true"); save.textContent="Salvando…";
+      const controls=[...form.querySelectorAll("input,button")];
+      controls.forEach(control=>control.disabled=true);
+      let saved=false;
+      try{
+        const updated=await VX.renameMockup(m.id,name);
+        m.name=updated.name;
+        card.querySelector(".material-name").textContent=updated.name.replace(/\.pdf$/i,"");
+        VX.notifyMaterialsChanged(m.id); VX.toast("Nome atualizado."); saved=true;
+      }catch(err){
+        console.error(err); error.textContent="Não foi possível salvar o nome. Tente novamente.";
+      }finally{
+        saving=false; form.removeAttribute("aria-busy"); save.textContent="Salvar nome";
+        controls.forEach(control=>control.disabled=false);
+        if(saved) close(); else input.focus();
+      }
     });
   }
 
@@ -202,9 +258,13 @@
     const slug=VX.makeSlug(file.name);
     loaderSub.textContent="Enviando para a nuvem…"; progressBar.style.width="0%";
     try{
+      const existing=await VX.getMockup(slug);
       await uploadPages(slug, out.images);
-      const row={ id:slug, name:file.name, num_pages:out.images.length, aspect:out.aspect, type, expires_at:null };
-      let { error } = await sb.from("mockups").upsert(row);
+      const row={ num_pages:out.images.length, aspect:out.aspect, type, expires_at:null };
+      // Ao substituir o PDF, preserva o nome editado e o estado de publicação.
+      const query=existing ? sb.from("mockups").update(row).eq("id",slug)
+        : sb.from("mockups").insert({id:slug,name:file.name,...row});
+      const { error } = await query.select("id").single();
       if(error) throw error;
       loader.classList.remove("show");
       VX.toast("Material enviado: "+slug);

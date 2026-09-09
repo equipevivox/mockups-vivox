@@ -32,12 +32,16 @@ Ao concluir cada tarefa relevante, o agente deve atualizar esses arquivos, criar
 | Rota | Página | Descrição |
 |---|---|---|
 | `/` e `/portfolio` | `index.html` | Portfólio público — só materiais com `is_public = true` |
-| `/admin` | `admin.html` | Login, envio de PDF, publicar no portfólio, abrir/comentar/excluir |
+| `/admin` | `admin.html` | Login, envio de PDF, renomear, publicar no portfólio, abrir/comentar/excluir |
 | `/m/:slug` | `viewer.html` | Visualização do material + comentários |
 
 As rotas limpas vêm de `vercel.json` (`rewrites`).
 
 O topo público usa a logo **VIVOX Grid**, centralizada, sem botão de administração. O painel é acessado diretamente por `/admin`.
+
+O botão no canto superior alterna os temas **claro e escuro** da página inicial. O padrão é escuro, com preto absoluto; a escolha fica salva no navegador em `localStorage` (`vivox_theme`) e é aplicada antes dos estilos para evitar flashes. O tema claro usa uma versão da mesma logo com letras escuras, mantendo o dourado. O painel e o visualizador mantêm seu tema original.
+
+No painel, a logo VIVOX Grid aparece no login e no cabeçalho. Use **Renomear → Nome exibido → Salvar nome** em cada material para mudar o título que aparece no portfólio e ao abrir o material. O campo aceita até 120 caracteres, remove espaços excedentes e a extensão `.pdf`. A alteração usa `mockups.name`, preserva o slug, os links, as páginas, os comentários e a publicação. Reenviar o PDF com o mesmo nome de arquivo também preserva esse título; arquivos novos começam com o nome do PDF. Falhas ao salvar mantêm o texto digitado para nova tentativa.
 
 > ⚠️ **Não usar `cleanUrls: true` no `vercel.json`** — ele anula os `rewrites` e `/portfolio` e `/m/:slug` passam a dar 404.
 > ⚠️ Em `viewer.html` os assets **precisam de caminho absoluto** (`/common.js`, `/lib/...`). Com caminho relativo, em `/m/SLUG` eles resolvem para `/m/common.js` → 404 (o erro aparece como `Unexpected token '<'`).
@@ -75,12 +79,12 @@ Os pins ficam **dentro** do elemento da página (`.pg`) ou do painel do folder, 
 
 O fundo de `/` e `/portfolio` usa uma galeria em perspectiva 3D, com colunas que se deslocam ao rolar a página. O exemplo de referência em React/Framer Motion foi adaptado para CSS e JavaScript nativos, preservando a arquitetura sem build.
 
-O cabeçalho e os filtros ficam centralizados. A lista apresenta capas com largura de até 420px, com até quatro materiais por linha a partir de 1680px, três entre 900px e 1679px, dois entre 600px e 899px e um abaixo de 600px. Linhas incompletas também ficam centralizadas. A base do portfólio é preto absoluto (`#000000`), com sobreposições pretas sobre as capas do fundo, que se aproximam ao rolar. O rodapé “ferramenta interna de revisão de materiais” foi removido.
+O cabeçalho e os filtros ficam centralizados. A lista apresenta capas com largura de até 420px, com até quatro materiais por linha a partir de 1680px, três entre 900px e 1679px, dois entre 600px e 899px e um abaixo de 600px. Linhas incompletas também ficam centralizadas. A base do tema escuro é preto absoluto (`#000000`); o tema claro usa `#faf9f6`, com sobreposições da mesma cor sobre as capas do fundo, que se aproximam ao rolar. O rodapé “ferramenta interna de revisão de materiais” foi removido.
 
 - A imagem é a primeira página (`{slug}/pages/0.jpg`) de cada material publicado (`is_public = true`) com pelo menos uma página.
 - Cada material ocupa uma única posição no fundo. Posições sem material ficam transparentes; não há imagens de exemplo, capas repetidas para preencher a tela ou cartões de substituição.
 - Um material novo preenche a próxima posição livre. Os filtros de categoria atuam na grade de cartões; o fundo mantém todos os materiais publicados.
-- A lista é consultada a cada 30 segundos enquanto a aba está visível, ao voltar à aba e ao recuperar a conexão. Envios, publicações e exclusões no painel notificam outras abas do mesmo navegador para atualizar imediatamente quando visíveis.
+- A lista é consultada a cada 30 segundos enquanto a aba está visível, ao voltar à aba e ao recuperar a conexão. Envios, publicações, exclusões e mudanças de nome no painel notificam outras abas do mesmo navegador para atualizar imediatamente quando visíveis.
 - Novos uploads continuam respeitando **Mostrar no portfólio**: enviar um material privado não o coloca no fundo público. Despublicar ou excluir um material remove sua capa na próxima atualização.
 - Se uma imagem não carregar, seu espaço permanece vazio e uma consulta posterior tenta carregá-la novamente. Falhas temporárias na consulta preservam o último resultado válido.
 - Ao reenviar um PDF com o mesmo nome, a notificação do painel renova a URL da capa nas outras abas desse navegador. Uma nova visita também busca a imagem atual. Abas já abertas em outro computador precisam ser recarregadas para renovar uma capa substituída sem mudança nos dados do material.
@@ -100,13 +104,16 @@ HTML/CSS/JS puro, sem build.
 ```
 index.html  + portfolio.js   portfólio público
 viewer.html + viewer.js      visualização + comentários
-admin.html  + admin.js       painel (login, upload, publicação)
+admin.html  + admin.js       painel (login, upload, nomes, publicação)
+theme.js                     preferência claro/escuro da página inicial
 common.js                    window.VX: cliente Supabase e helpers
 portfolio-background.js     distribuição das capas e movimento do fundo
 portfolio-background.css    perspectiva, sobreposição e responsividade do fundo
 style.css                    base e identidade
 ui.css                       portfólio, balões de comentário e admin
-assets/vivox-grid.svg         logo original enviada pelo usuário, usada no topo público
+assets/vivox-grid.svg         logo original no portfólio e no painel
+assets/vivox-grid-light.svg   mesma logo com letras escuras para o tema claro
+tests/material-name.test.cjs validação de nomes e gravação sem alterar o slug
 lib/                         jquery 1.7 + turn.min.js
 pdf.worker.min.js            worker do PDF.js (precisa ser same-origin)
 vercel.json                  rewrites das rotas
@@ -123,7 +130,7 @@ Projeto `kthestvyzvbbpnsulned` (região sa-east-1).
 | Campo | Tipo | Observação |
 |---|---|---|
 | `id` | text (PK) | slug: MAIÚSCULAS, sem acento, espaços → `_` |
-| `name` | text | nome do arquivo original |
+| `name` | text | nome exibido editável; inicialmente recebe o nome do PDF |
 | `num_pages` | int | |
 | `aspect` | float | altura/largura da página |
 | `type` | text | `revista` \| `mockup` \| `folder` |

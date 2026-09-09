@@ -2,65 +2,48 @@
 
 Última atualização: 2026-09-08 (America/Cuiaba).
 
-## Objetivo
+## Objetivo e continuidade
 
-Aplicação VIVOX para publicar um portfólio de materiais e revisar PDFs renderizados em imagens, com visualização folheável e comentários ancorados na página. A arquitetura e o funcionamento estão no [README.md](README.md).
+Portfólio público VIVOX com revistas, folders e mockups, visualizador folheável e comentários ancorados nas páginas. Arquitetura e operação no [README.md](README.md); regras permanentes em [AGENTS.md](AGENTS.md); entregas no [HISTORICO.md](HISTORICO.md).
 
-## Preferência permanente do usuário
+O usuário pediu manter alterações e contexto no GitHub para continuar em outro computador. Sempre atualizar os registros, fazer commit e enviar ao remoto ao concluir. Não registrar segredos, dados de clientes ou conversas completas. Não depender de acesso à conversa anterior.
 
-Manter o registro de alterações e o contexto no GitHub para retomar o trabalho em outro computador. Ao terminar cada tarefa relevante, atualizar este resumo e o [HISTORICO.md](HISTORICO.md), criar um commit e enviá-lo ao remoto. Seguir o procedimento de [AGENTS.md](AGENTS.md).
+## Repositório e produção
 
-## Estado confirmado nesta tarefa
+- Remoto: `https://github.com/equipevivox/mockups-vivox.git`, público, branch `main` acompanhando `origin/main`. Base desta tarefa: `60ec732`, já sincronizada antes das alterações.
+- Produção: `https://grid.vivoxmarketing.com.br`, alias `https://mockups-vivox.vercel.app`. O domínio antigo `mockups.vivoxmarketing.com.br` foi substituído pelo usuário; não há pendência de recuperá-lo.
+- Vercel: projeto existente **mockups-vivox**, ID `prj_gpzWlIxg6CuooSrEcKo2pTPiV6D8`, equipe `equipevivox-7341s-projects` (`team_14ydzpU22f732BVCX1lK6WA2`). Pasta vinculada localmente por `.vercel/project.json`.
+- GitHub conectado ao projeto Vercel; envios à `main` disparam produção automaticamente. Fluxo já confirmado em entregas anteriores; verificar o deployment e seu SHA após cada push.
+- Aplicação estática HTML/CSS/JS, sem build. Supabase: `kthestvyzvbbpnsulned`. Não instalar React, bundler ou dependências de frontend apenas para efeitos visuais.
+- Usar Git local autenticado para publicar. Cada computador precisa de sua autenticação. `.env*`, `.vercel` e `node_modules` ficam fora do Git; a CLI pode baixar variáveis locais.
 
-- Repositório: `https://github.com/equipevivox/mockups-vivox`.
-- Branch principal: `main`. A pasta de trabalho foi conectada a `origin` e passou a acompanhar `origin/main`.
-- Base desta tarefa: commit `54373ed`, com fundo preto, revistas ampliadas e rodapé removido.
-- Vercel: projeto existente `mockups-vivox`, ID `prj_gpzWlIxg6CuooSrEcKo2pTPiV6D8`, equipe `equipevivox-7341s-projects` (`team_14ydzpU22f732BVCX1lK6WA2`). A pasta está vinculada por `.vercel/project.json`, que é local e não deve ser versionado.
-- Produção: `https://grid.vivoxmarketing.com.br`, com alias `https://mockups-vivox.vercel.app`. O usuário mudou o domínio personalizado; o projeto Vercel continua **mockups-vivox**.
-- Integração Vercel–GitHub conectada a `equipevivox/mockups-vivox`; branch de produção `main`. Os próximos envios a essa branch devem disparar a publicação automática no mesmo projeto.
-- Aplicação estática em HTML/CSS/JS, sem etapa de build; arquivos de portfólio, administração e visualizador presentes.
-- Topo público com a logo original **VIVOX Grid** (`assets/vivox-grid.svg`) centralizada e responsiva, substituindo o símbolo e o texto anteriores. Botão de admin removido; o painel continua acessível diretamente em `/admin`. A logo mantém o link para `/portfolio` e tem texto alternativo e foco visível.
-- Textos de abertura atualizados conforme solicitação do usuário: eyebrow **MATERIAIS VIVOX**, título **Materiais criados para sua marca** e descrição que orienta explorar os materiais, folhear páginas e comentar. Filtros mantidos como **Todos**, **Revistas**, **Folders** e **Mockups**, pois não foram enviados novos rótulos.
-- Cabeçalho, filtros e metadados centralizados. Capas ampliadas para até 420px e área de galeria de até 1880px; linhas de quatro em telas a partir de 1680px, três a partir de 900px, duas a partir de 600px e uma em telas menores. Linhas com poucos materiais ficam centralizadas sem cartões de preenchimento.
-- Rodapé “VIVOX · ferramenta interna de revisão de materiais” removido. Base do portfólio em preto absoluto `#000000`, com sobreposições pretas e capas decorativas preservadas. As referências dos dois estilos alterados em `index.html` têm versão na URL para evitar a reutilização de CSS anterior pelo navegador.
-- Zoom do fundo ampliado pela largura da matriz, altura das capas e profundidade; o movimento continua vinculado à rolagem. A máscara agora prioriza o centro para preservar a leitura dos textos.
-- A atualização dos textos foi publicada automaticamente a partir de `c1580a2`, com deployment `dpl_89UXNt3ck5xcHrEU3nXFdGSbwxRF` em estado `READY`. As rotas `/` e `/portfolio` em `mockups-vivox.vercel.app` responderam 200 com HTML idêntico ao arquivo local.
-- Implementado o fundo 3D do portfólio em `portfolio-background.js` e `portfolio-background.css`, a partir do componente de referência enviado pelo usuário, adaptado para a stack estática.
-- O fundo usa uma capa por material público com páginas, mantém posições não utilizadas vazias e incorpora novos materiais sem repetir as capas anteriores. Não foram acrescentadas imagens demonstrativas.
-- O portfólio consulta apenas materiais públicos a cada 30 segundos com a aba visível e recebe notificações do painel após envios, publicações ou exclusões. Há duas revistas publicadas na consulta realizada nesta tarefa.
-- Capas indisponíveis ficam invisíveis; novas tentativas ocorrem nas atualizações. O fundo respeita movimento reduzido e não intercepta os controles.
-- Visibilidade consultada na API do GitHub: pública. O README foi corrigido porque dizia que o repositório era privado.
+## Interface atual
 
-## Decisões para a continuidade
+- Logo **VIVOX Grid** centralizada no topo público, sem botão de admin; painel acessível diretamente em `/admin`. A mesma logo aparece no login e no cabeçalho do painel.
+- Botão no canto superior alterna tema claro/escuro apenas na página inicial. Escuro é o padrão, com fundo preto `#000000`; claro usa `#faf9f6` e letras escuras na mesma logo, preservando o dourado. A escolha em `vivox_theme` é aplicada antes dos estilos e sincronizada entre abas do navegador. Sem acesso ao armazenamento, a troca continua funcionando na aba.
+- Textos solicitados: **MATERIAIS VIVOX**, **Materiais criados para sua marca** e descrição orientando explorar materiais, folhear páginas e comentar. Filtros: Todos, Revistas, Folders e Mockups.
+- Textos, filtros e metadados centralizados. Capas de até 420px, galeria de até 1880px; linhas de 4/3/2/1 a partir de 1680/900/600/abaixo de 600px. Linhas incompletas centralizadas. Rodapé de ferramenta interna removido.
+- Fundo decorativo 3D com a primeira página de cada material público que tenha páginas. Sem capas duplicadas ou exemplos; posições livres e falhas de imagem ficam vazias. Novos materiais preservam as posições existentes. Movimento acompanha a rolagem e respeita movimento reduzido; fundo sem interação e `aria-hidden`.
+- Consultas a cada 30 segundos somente com a aba visível, ao voltar à aba e ao recuperar conexão. Envios, publicação, exclusão e mudanças de nome notificam outras abas via `VX.notifyMaterialsChanged(id)`. Filtros afetam somente os cartões.
 
-- `AGENTS.md` guarda as regras estáveis; este arquivo guarda o estado atual; `HISTORICO.md` guarda o registro das tarefas. O Git mantém as alterações exatas de cada commit.
-- Atualizar a cópia local antes de começar, preservando trabalho existente, e publicar os registros ao concluir. O contexto compartilhado deve ser suficiente para trabalhar sem a conversa anterior.
-- Não registrar segredos, dados de clientes ou transcrições completas. Não depender de caminhos específicos de um computador.
-- Consultar as restrições técnicas já documentadas em `AGENTS.md` antes de alterar folheamento, comentários, renderização de PDFs ou rotas.
-- Manter a regra **Mostrar no portfólio** também para o fundo. Os filtros de categoria alteram os cartões, sem apagar as capas do fundo.
-- Não instalar React, Tailwind ou Framer Motion apenas para este efeito: a adaptação usa CSS 3D e JavaScript nativos.
+## Edição do nome
 
-## Validação e limites
+- No admin, **Renomear → Nome exibido → Salvar nome** altera `mockups.name`, usado pela página inicial e pelo visualizador. Não exige migração.
+- Até 120 caracteres; remove espaços excedentes e extensão `.pdf`. Nome vazio é recusado. Erros preservam a entrada, há estado de salvamento, cancelamento por Escape e retorno de foco ao botão.
+- Atualização limitada a `name`, filtrada por `id`, com `.select("id,name").single()` para confirmar a linha gravada. Slug, arquivos, links, comentários e publicação são preservados.
+- Reenvio consulta o material pelo slug e atualiza apenas os dados das páginas, preservando o nome editado e `is_public`. Novos arquivos são inseridos com o nome original do PDF.
 
-- Logo verificada no Edge em 1440 × 1000 e 390 × 844: SVG carregado com 307px e 230px de largura, respectivamente, centralização confirmada, botão de admin ausente e nenhuma rolagem horizontal ou erro de execução. O arquivo SVG original foi copiado sem alterar o desenho.
-- O usuário esclareceu que o endereço atual é `grid.vivoxmarketing.com.br`. A API Vercel confirmou esse domínio no mesmo projeto, com `verified: true`, e o site respondeu HTTP 200. A falha anterior referia-se ao domínio antigo; não há pendência de recuperar esse endereço.
-- Última inspeção visual no Edge em 2508 × 1361, 1440 × 1000 e 390 × 844: duas capas reais carregadas, cabeçalho centralizado, rodapé ausente, fundo computado `rgb(0, 0, 0)` sem gradiente na base e nenhum transbordamento horizontal ou erro de execução. As capas renderizaram com aproximadamente 391/398/323px de largura, respectivamente. O detector visual operou em modo limitado e apontou somente a fonte Inter, preservada como parte da identidade existente.
-- Acesso ao repositório, histórico e rastreamento de `main` conferidos.
-- A integração GitHub recusou escrita na tarefa anterior. Usar o Git local autenticado para publicar; outro computador precisa ter sua própria autenticação para enviar commits.
-- Sintaxe JavaScript e diff conferidos. A visualização local foi inspecionada no Edge em desktop (1440 × 1000) e celular (390 × 844), com as duas capas reais, sem transbordamento horizontal ou erros de execução.
-- Cenários de ausência de materiais, inclusão, despublicação, exclusão, falha de imagem, falha de rede, filtros e movimento reduzido verificados com respostas simuladas isoladas do banco real.
-- A consulta periódica incorporou um material em 29 segundos, sem recarga ou evento de foco; a rolagem alterou a perspectiva e a posição das colunas conforme esperado.
-- Nenhuma migração, alteração nas permissões do backend ou upload de teste foi realizado em produção.
-- Publicação de produção concluída via CLI no projeto existente: deployment `dpl_B3NDBRje1KHsraPq3F8LtWr7U373`, estado `READY`. Confirmados os dois domínios, respostas HTTP 200 para `/`, `/portfolio`, `/admin`, `/m/REVISTA_HOSPITAL_VISAO` e os novos assets. O navegador carregou as duas revistas reais.
-- Correção do diagnóstico anterior: a listagem da integração Vercel estava incompleta. A CLI e o painel encontraram o projeto na mesma conta `equipevivox-7341`; não foi necessário trocar de conta nem criar projeto.
-- A conexão Vercel–GitHub foi concluída após o usuário confirmar o acesso do aplicativo no GitHub. A CLI retornou `Connected`, e a API do projeto confirmou provedor `github`, organização `equipevivox`, repositório `mockups-vivox` e branch de produção `main`.
-- Fluxo automático verificado: o envio do commit `77ae404` à `main` criou o deployment `dpl_GcB5EQBF9pEJCCqSGaBZxSWuJLXq`, com origem `git`, destino `production` e estado `READY`. O registro está sincronizado no GitHub.
-- `.env*` foi incluído em `.gitignore`; a vinculação da CLI pode baixar variáveis locais. Tokens e arquivos `.env` não foram enviados ao Git nem ao deploy.
-- Reenvio do mesmo arquivo renova a capa por notificação entre abas do mesmo navegador e em novas visitas. Uma aba já aberta em outro computador precisa ser recarregada quando os dados do material não mudam, pois o schema atual não tem versão da capa nem `updated_at`.
-- Os pontos de autenticação e permissões descritos no README são contexto herdado, não resultado de uma auditoria atual.
+## Verificações e limites
 
-## Próximos passos
+- Nesta entrega: sintaxe JavaScript, diff e quatro testes automatizados (`node --test tests/material-name.test.cjs`) sobre validação, atualização restrita ao nome, erro do banco e confirmação da linha correta.
+- Edge: temas em desktop 1440 × 1000 e celular 390 × 844; persistência após recarregar; retorno ao preto absoluto em 320px; logo centralizada, botão com área de 44px e sem transbordamento horizontal.
+- Login e painel com logo verificados em desktop/celular. Testes isolados com respostas simuladas: nome vazio, erro de rede e nova tentativa, caracteres especiais, nome com 120 caracteres, Escape, atualização da página inicial, preservação do link, notificação entre abas, reenvio preservando nome/publicação e envio novo com nome do arquivo.
+- Nenhum material real foi renomeado ou enviado pelos testes. Consultas ao Supabase confirmaram o schema existente e a permissão de atualização já utilizada pelo painel; nenhuma migração ou alteração de permissões foi feita.
+- Detector visual funcionou em modo limitado (parser HTML indisponível) e apontou apenas a fonte Inter, preservada pela identidade VIVOX. Inspeção visual feita no navegador.
+- Entregas anteriores verificaram filtros, estados vazios, falha de imagem/rede, novos materiais, posições estáveis e movimento reduzido. Preservar essas regras.
+- Ao substituir uma capa sem mudar os dados do material, outra aba no mesmo navegador a renova pela notificação. Uma aba já aberta em outro computador precisa recarregar nesse caso: o schema não tem versão da capa nem `updated_at`.
+- Autenticação e permissões herdadas estão documentadas no README; esta tarefa não alterou esse modelo.
 
-- Conferir o resultado do deploy da Vercel após envios à branch `main`.
-- Se houver trabalho futuro de segurança, conferir a autenticação e as permissões reais do backend levando em conta a visibilidade pública do repositório.
-- Em outro computador, clonar ou atualizar a branch de trabalho, abrir sua pasta no Codex e ler estes registros antes de editar.
+## Retomada
+
+Clonar ou atualizar a branch, ler os três registros e conferir Git antes de editar. Após publicar alterações, verificar o SHA no remoto e o deployment de produção no projeto existente.

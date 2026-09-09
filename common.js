@@ -59,7 +59,7 @@ window.VX = (function(){
     return (data||[]).map(m=>({ ...m, type:normType(m.type) }));
   }
   function notifyMaterialsChanged(id){
-    // A outra aba atualiza assim que uma publicação, exclusão ou envio termina.
+    // A outra aba atualiza após publicação, exclusão, envio ou mudança de nome.
     try{ localStorage.setItem("vivox_materials_changed",JSON.stringify({id,version:Date.now()})); }
     catch(e){ /* O portfólio também se atualiza por consulta periódica. */ }
   }
@@ -67,6 +67,20 @@ window.VX = (function(){
     const { data, error } = await sb.from("mockups").select("*").eq("id",id).maybeSingle();
     if(error) throw error;
     return data ? { ...data, type:normType(data.type) } : null;
+  }
+  function normalizeMaterialName(value){
+    const name=String(value||"").trim().replace(/\.pdf$/i,"").replace(/\s+/g," ").trim();
+    if(!name) throw new Error("Digite um nome para o material.");
+    if(name.length>120) throw new Error("Use até 120 caracteres no nome.");
+    return name;
+  }
+  async function renameMockup(id, value){
+    const name=normalizeMaterialName(value);
+    // Retorna a linha para confirmar a gravação, sem alterar slug, páginas ou links.
+    const { data, error } = await sb.from("mockups").update({name}).eq("id",id).select("id,name").single();
+    if(error) throw error;
+    if(!data || data.id!==id) throw new Error("O material não foi encontrado. Atualize a lista e tente novamente.");
+    return data;
   }
 
   // ---- comentários ----
@@ -113,6 +127,6 @@ window.VX = (function(){
   }
 
   return { cfg, BUCKET, sb, $, publicUrl, pageUrl, esc, toast, fmtDate, nextFrame, preloadImages,
-           makeSlug, TYPE_LABEL, normType, listMockups, listPublicMockups, notifyMaterialsChanged, getMockup,
+           makeSlug, TYPE_LABEL, normType, listMockups, listPublicMockups, notifyMaterialsChanged, getMockup, normalizeMaterialName, renameMockup,
            listComments, addComment, addReply, setResolved, deleteComment, uploadPhoto };
 })();

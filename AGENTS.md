@@ -29,7 +29,7 @@ O registro é atualizado durante o trabalho do agente; não é um serviço de si
 - Rodar local: `python -m http.server 8130` na raiz.
 - Deploy: `vercel deploy . --prod --yes` (o alias de produção atualiza sozinho).
 - Escreva em **português do Brasil** — comentários de código, textos de interface e mensagens de commit.
-- Toda a interface segue a identidade VIVOX: dourado `#CCB691 → #876224`, fonte Inter e as variáveis CSS de `style.css`. No portfólio, usar **preto absoluto `#000000`** no fundo e nas sobreposições, conforme pedido do usuário; painel e visualizador mantêm os fundos escuros originais. Não reintroduzir o rodapé “ferramenta interna de revisão de materiais”.
+- Toda a interface segue a identidade VIVOX: dourado `#CCB691 → #876224`, fonte Inter e as variáveis CSS de `style.css`. O portfólio oferece tema claro e escuro; o padrão escuro usa **preto absoluto `#000000`** no fundo e nas sobreposições. Preserve a escolha em `vivox_theme`; painel e visualizador mantêm os fundos escuros originais. Não reintroduzir o rodapé “ferramenta interna de revisão de materiais”.
 - No topo público, manter a logo original `assets/vivox-grid.svg` centralizada e sem botão de admin. O painel é acessado diretamente por `/admin`.
 
 ## Armadilhas que já custaram caro
@@ -56,6 +56,7 @@ O worker **precisa ser same-origin** (`/pdf.worker.min.js`, versionado no repo).
 ## Dados
 
 - O `id` do material é um **slug derivado do nome do arquivo** (MAIÚSCULAS, sem acento, espaços → `_`). Reenviar um PDF com o mesmo nome **sobrescreve** o material.
+- `mockups.name` é o **nome exibido editável**, com limite de 120 caracteres na edição. Renomear não altera slug, links, páginas ou comentários. Ao reenviar o PDF, preserve o nome editado e `is_public`; atualize somente os dados das páginas. Novos materiais recebem inicialmente o nome do arquivo.
 - São guardadas as **páginas renderizadas em JPEG**, nunca o PDF original.
 - Comentários sem `x`/`y` são anteriores ao recurso de pins: aparecem só na lista lateral, sem marcador na página. Trate esse caso como válido.
 
@@ -64,7 +65,7 @@ O worker **precisa ser same-origin** (`/pdf.worker.min.js`, versionado no repo).
 - Use somente a primeira página dos materiais publicados, sem duplicar capas ou preencher posições vazias com imagens de exemplo. Este comportamento foi solicitado explicitamente pelo usuário.
 - Preserve as posições existentes ao adicionar materiais e deixe o espaço vazio quando a imagem falhar.
 - Mantenha o fundo decorativo (`aria-hidden`, sem interação), a preferência de movimento reduzido e a consulta periódica somente com a aba visível.
-- No painel, chame `VX.notifyMaterialsChanged(id)` após concluir envio, publicação ou exclusão; isso mantém outras abas do portfólio atualizadas. Os filtros de categoria continuam atuando somente nos cartões.
+- No painel, chame `VX.notifyMaterialsChanged(id)` após concluir envio, publicação, exclusão ou mudança de nome; isso mantém outras abas do portfólio atualizadas. Os filtros de categoria continuam atuando somente nos cartões.
 
 ## Ao mexer em comentários
 

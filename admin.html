@@ -11,26 +11,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <link rel="stylesheet" href="/style.css" />
-<link rel="stylesheet" href="/ui.css" />
+<link rel="stylesheet" href="/ui.css?v=20260909-1" />
 </head>
 <body>
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-    <linearGradient id="vg" x1="16.7" y1="9.2" x2="51.3" y2="58" gradientUnits="userSpaceOnUse"><stop stop-color="#CCB691"/><stop offset="1" stop-color="#876224"/></linearGradient>
-    <symbol id="vivoxV" viewBox="0 0 55 58">
-      <path d="M7.55687 0H0L5.85818 15.6016L6.07185 14.7968C6.71286 12.3787 7.89518 10.1672 8.30828 7.69576C8.72494 5.19223 8.51128 2.57119 7.6281 0.199427L7.55331 0H7.55687Z" fill="url(#vg)"/>
-      <path d="M43.5214 2.33678e-06L25.5409 48.7849L11.8053 11.5134L11.5952 10.9863L11.3175 11.492C8.66792 16.2747 8.25839 21.9726 10.1921 27.1221C14.0347 37.3499 17.8736 47.5777 21.7126 57.8055H29.3692L51.0783 2.33678e-06H43.5214Z" fill="url(#vg)"/>
-      <circle cx="51.3081" cy="54.6547" r="3.34615" fill="#D30303"/>
-    </symbol>
-  </defs></svg>
 
   <!-- ===== LOGIN ===== -->
   <div class="login-wrap" id="loginWrap">
     <form class="login-card" id="loginForm">
-      <div class="vlogo"><span><svg viewBox="0 0 55 58" style="height:30px"><use href="#vivoxV"/></svg></span><div>VIVOX<small>Painel Admin</small></div></div>
+      <div class="admin-brand"><img src="/assets/vivox-grid.svg" alt="VIVOX Grid" width="307" height="41" /><span>Painel admin</span></div>
       <h1>Acesso restrito</h1>
       <p>Entre para gerenciar os materiais.</p>
-      <div class="field"><label>Usuário</label><input type="text" id="user" autocomplete="username" autocapitalize="off" spellcheck="false" /></div>
-      <div class="field"><label>Senha</label><input type="password" id="pass" autocomplete="current-password" /></div>
+      <div class="field"><label for="user">Usuário</label><input type="text" id="user" autocomplete="username" autocapitalize="off" spellcheck="false" /></div>
+      <div class="field"><label for="pass">Senha</label><input type="password" id="pass" autocomplete="current-password" /></div>
       <button class="login-btn" type="submit">Entrar</button>
       <div class="login-err" id="loginErr"></div>
     </form>
@@ -39,7 +31,7 @@
   <!-- ===== DASHBOARD ===== -->
   <div class="dash" id="dash">
     <div class="top">
-      <div class="vlogo"><span><svg viewBox="0 0 55 58" style="height:30px"><use href="#vivoxV"/></svg></span><div>VIVOX<small>Painel Admin</small></div></div>
+      <div class="admin-brand"><img src="/assets/vivox-grid.svg" alt="VIVOX Grid" width="307" height="41" /><span>Painel admin</span></div>
       <div class="top-actions">
         <a class="btn" href="/portfolio" target="_blank" rel="noopener">Ver portfólio</a>
         <button class="btn btn-gold" id="uploadBtn">
@@ -120,7 +112,7 @@ alter table public.comments add column if not exists parent_id  uuid references 
   <div class="toast" id="toast"></div>
 
   <script src="/config.js"></script>
-  <script src="/common.js"></script>
-  <script src="/admin.js"></script>
+  <script src="/common.js?v=20260909-1"></script>
+  <script src="/admin.js?v=20260909-1"></script>
 </body>
 </html>
