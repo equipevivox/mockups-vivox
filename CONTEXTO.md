@@ -23,7 +23,9 @@
 - URLs de PUT duram dez minutos, vinculadas à chave/tipo/tamanho. Limites: 500 páginas/PDF, 7 MB/JPEG, cinco anexos/comentário de até 10 MB em JPG/PNG/WebP/GIF.
 - CORS **configurado e verificado** no painel Cloudflare para os domínios grid e alias Vercel e localhost/127.0.0.1:8130. Credencial S3 permite objetos, mas não gestão de CORS; configuração feita na sessão já autenticada do usuário. Não ampliadas permissões do token.
 - Chaves somente em `.env.r2.local` ignorado e, após autorização, variáveis criptografadas da Vercel. Nunca registrar os valores. O token geral Cloudflare não é usado pela aplicação.
-- **Bloqueio concreto:** revisão automática rejeitou o envio dos segredos à Vercel por exigir autorização explícita para esse destino/payload. Pergunta enviada ao usuário, ainda sem resposta ao registrar este estado. Nenhuma dessas variáveis foi enviada à Vercel, nenhum deploy desta integração foi feito, e `main` continua na versão anterior.
+- **Bloqueio concreto:** revisão automática rejeitou o envio dos segredos à Vercel por exigir autorização explícita para esse destino/payload. Pergunta enviada ao usuário, ainda sem resposta ao registrar este estado. Nenhuma dessas variáveis foi enviada à Vercel, nenhum deploy de produção desta integração foi feito, e `main` continua na versão anterior.
+
+- Commit inicial da integração: `77b5707` publicado e confirmado no GitHub. Prévia da branch: `dpl_6oMoLYv9nd3738ER3Jmt2HrMkkrf`, build **READY**, função presente; API responde 503 de configuração ausente, como esperado enquanto faltam variáveis. Produção permanece em `11ca82a`. Rotas `/`, `/portfolio`, `/admin` e `/m/TESTE` retornaram 200 na prévia; `.env.r2.local`, `server/auth.cjs` e `package.json` retornaram 404.
 
 ## Retomar e ativar
 
@@ -36,7 +38,7 @@
 
 - Frontend HTML/CSS/JS puro, sem React ou bundler. SDK S3 em dependências de servidor com versões fixadas/lockfile.
 - `npm ci`, `npm run dev`: servidor Node local com API, somente assets permitidos. `npm run build` copia esses assets para `public/`, ignorado. Não usar servidor estático genérico na raiz que possa expor `.env*`.
-- Servidor local de teste foi iniciado com senha/segredo exclusivos e descartáveis; não são a senha de produção. Reiniciar normalmente antes de uso real.
+- Servidor local de teste usou senha/segredo exclusivos e descartáveis; não são a senha de produção. Reiniciar normalmente antes de uso real.
 - Versões anteriores e envios incompletos permanecem até exclusão explícita do material; não há limpeza automática. A exclusão usa R2 API e Supabase Storage API. `r2.dev` possui limites de requisição; domínio próprio de arquivos é um possível próximo passo.
 - Limites por IP são básicos e por instância; proteção global requer Firewall. Não há novos alertas do advisor da migração; avisos anteriores do projeto compartilhado permanecem fora desta tarefa.
 
