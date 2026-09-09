@@ -4,6 +4,27 @@ Aplicação web da VIVOX (marketing médico) para **publicar um portfólio** de 
 
 **Produção:** https://mockups-vivox.vercel.app
 
+## Retomar o trabalho em outro computador
+
+O contexto do projeto fica versionado neste repositório:
+
+- [`AGENTS.md`](AGENTS.md): instruções permanentes para o agente, incluindo leitura e atualização do contexto a cada tarefa.
+- [`CONTEXTO.md`](CONTEXTO.md): estado atual, decisões, limitações e próximos passos.
+- [`HISTORICO.md`](HISTORICO.md): registro cronológico das entregas e verificações.
+
+Na primeira utilização em outro computador:
+
+```bash
+git clone https://github.com/equipevivox/mockups-vivox.git
+cd mockups-vivox
+```
+
+Se o repositório já estiver clonado, confira `git status` e, com a árvore limpa e sem divergência, execute `git pull --ff-only` na branch que deseja retomar. A branch principal é `main`; trabalhos em outra branch devem ser retomados nela.
+
+Abra a pasta do projeto no Codex e inicie a tarefa a partir dela. O Codex lê as instruções de `AGENTS.md`, que orientam a leitura dos outros registros ([documentação oficial](https://learn.chatgpt.com/docs/agent-configuration/agents-md)). Também é possível pedir: “Leia AGENTS.md e retome pelo CONTEXTO.md e HISTORICO.md”.
+
+Ao concluir cada tarefa relevante, o agente deve atualizar esses arquivos, criar o commit e enviar ao GitHub. Entrar na conta do GitHub não atualiza uma cópia local nem transfere a conversa inteira: a continuidade depende dos registros publicados e de atualizar o repositório.
+
 ---
 
 ## Rotas
@@ -141,4 +162,4 @@ O alias `mockups-vivox.vercel.app` é atualizado automaticamente.
 
 - O login do admin é **client-side**: usuário `VIVOX` e o **hash SHA-256** da senha em `admin.js`. É uma trava de conveniência, não segurança real.
 - A **RLS do Supabase é permissiva para `anon`** — o slug do material funciona como "token" de acesso. A chave publishable dá acesso de leitura/escrita aos dados.
-- Por isso este repositório é **privado**. Para segurança de verdade seria preciso Supabase Auth + RLS restrita por usuário.
+- O repositório está **público**, conforme consulta à API do GitHub em 2026-09-08. A descrição anterior como privado estava desatualizada. Para segurança de verdade seria preciso Supabase Auth + RLS restrita por usuário; o estado das políticas descrito acima ainda precisa ser revalidado no backend.

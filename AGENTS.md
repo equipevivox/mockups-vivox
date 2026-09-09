@@ -2,6 +2,27 @@
 
 Leia o `README.md` primeiro — ele tem a arquitetura, as rotas e o schema.
 
+## Continuidade entre computadores
+
+O usuário pediu que as alterações e o contexto sejam sempre mantidos no GitHub, para retomar o projeto em outro computador. Esta é uma regra permanente deste repositório.
+
+### Ao iniciar uma tarefa
+
+1. Leia `README.md`, `CONTEXTO.md` e as entradas mais recentes de `HISTORICO.md`, além destas instruções.
+2. Confira `git status --short --branch`, `git remote -v` e `git log -5 --oneline`. O remoto esperado é `https://github.com/equipevivox/mockups-vivox.git`; a branch principal é `main`.
+3. Execute `git fetch origin`. Com a árvore limpa e a branch acompanhando seu remoto, atualize com `git pull --ff-only` e releia a documentação se ela mudou. Preserve alterações locais; se houver divergência, examine os commits antes de integrar e não use reset destrutivo ou force push.
+4. Use os arquivos versionados e o estado real do código como contexto compartilhado. Não presuma acesso à conversa de outro computador. Se a rede falhar, informe que o contexto remoto ainda não foi conferido.
+
+### Ao concluir uma tarefa com alterações ou decisões relevantes
+
+1. Atualize `CONTEXTO.md` com o estado atual, decisões, validações, limitações e próximos passos. Mantenha esse resumo curto e substitua informações que ficaram desatualizadas.
+2. Acrescente uma entrada datada no início de `HISTORICO.md`, sem apagar entradas anteriores: pedido, alterações, motivo das decisões, verificações e pendências. Atualize também o `README.md` quando mudar arquitetura, configuração ou uso.
+3. Revise o diff, faça as verificações adequadas e inclua somente arquivos desta tarefa em um commit com mensagem em português. Não inclua alterações alheias, credenciais, dados de clientes ou conversas completas.
+4. Envie os commits e a documentação para `origin` ao concluir, salvo instrução explícita do usuário para manter o trabalho local. O pedido de manter o registro no GitHub autoriza essa sincronização de rotina. Respeite a branch em uso e as proteções do repositório; para uma nova branch de trabalho, use o prefixo `codex/`.
+5. Verifique se o commit local está no remoto e informe o commit e a branch na entrega. Se não conseguir publicar, registre a pendência e diga claramente que as alterações continuam locais. Nunca declare sincronização apenas por ter criado um commit.
+
+O registro é atualizado durante o trabalho do agente; não é um serviço de sincronização em segundo plano. O histórico Git guarda o diff exato, `HISTORICO.md` explica as entregas e `CONTEXTO.md` orienta a retomada.
+
 ## Como trabalhar aqui
 
 - **Sem build.** HTML/CSS/JS puro servido estaticamente. Não introduza bundler, framework ou `node_modules` sem necessidade real.
