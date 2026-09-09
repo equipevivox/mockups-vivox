@@ -57,6 +57,7 @@ O worker **precisa ser same-origin** (`/pdf.worker.min.js`, versionado no repo).
 
 - O `id` do material é um **slug derivado do nome do arquivo** (MAIÚSCULAS, sem acento, espaços → `_`). Reenviar um PDF com o mesmo nome **sobrescreve** o material.
 - `mockups.name` é o **nome exibido editável**, com limite de 120 caracteres na edição. Renomear não altera slug, links, páginas ou comentários. Ao reenviar o PDF, preserve o nome editado e `is_public`; atualize somente os dados das páginas. Novos materiais recebem inicialmente o nome do arquivo.
+- `mockups.cover_version` é gerado pelo banco. O trigger renova a versão em `UPDATE OF num_pages, aspect`, inclusive quando os valores permanecem iguais. Mantenha essa atualização **depois** de concluir o envio das páginas; use `VX.pageUrl(slug, indice, cover_version)` para renovar o cache em todos os computadores. Renomear ou publicar não deve alterar a versão.
 - São guardadas as **páginas renderizadas em JPEG**, nunca o PDF original.
 - Comentários sem `x`/`y` são anteriores ao recurso de pins: aparecem só na lista lateral, sem marcador na página. Trate esse caso como válido.
 
@@ -64,6 +65,8 @@ O worker **precisa ser same-origin** (`/pdf.worker.min.js`, versionado no repo).
 
 - Use somente a primeira página dos materiais publicados, sem duplicar capas ou preencher posições vazias com imagens de exemplo. Este comportamento foi solicitado explicitamente pelo usuário.
 - Preserve as posições existentes ao adicionar materiais e deixe o espaço vazio quando a imagem falhar.
+- Não dimensione a altura da matriz pela quantidade de capas: isso recentraliza e desloca as imagens existentes. Preserve posições absolutas por slot, carregamento independente de `loading=lazy` e descarte de respostas de versões antigas.
+- Vincule o parallax ao elemento que realmente rola e ao intervalo `scrollHeight - clientHeight`. Atualize esse cálculo quando o conteúdo mudar; mantenha colunas em sentidos opostos e a animação parada quando o movimento terminar.
 - Mantenha o fundo decorativo (`aria-hidden`, sem interação), a preferência de movimento reduzido e a consulta periódica somente com a aba visível.
 - No painel, chame `VX.notifyMaterialsChanged(id)` após concluir envio, publicação, exclusão ou mudança de nome; isso mantém outras abas do portfólio atualizadas. Os filtros de categoria continuam atuando somente nos cartões.
 

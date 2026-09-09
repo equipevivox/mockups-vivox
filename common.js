@@ -7,7 +7,8 @@ window.VX = (function(){
 
   const $ = (id)=>document.getElementById(id);
   const publicUrl = (path)=>`${cfg.SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
-  const pageUrl = (slug,i)=>publicUrl(`${slug}/pages/${i}.jpg`);
+  const pageUrl = (slug,i,version)=>publicUrl(`${slug}/pages/${i}.jpg`)
+    +(version ? "?cacheNonce="+encodeURIComponent(version) : "");
   const esc = (s)=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
   const TYPE_LABEL = { revista:"Revista", mockup:"Mockup", folder:"Folder" };

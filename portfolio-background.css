@@ -24,7 +24,7 @@
   outline:2px solid var(--gold-bright);outline-offset:5px;
 }
 .pf-backdrop{
-  --cover-height:clamp(340px,46vw,680px);
+  --cover-height:clamp(340px,46vw,680px);--cover-gap:32px;
   position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;
 }
 .pf-backdrop::after{
@@ -34,26 +34,29 @@
 }
 .pf-backdrop-frame{
   position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  perspective:1100px;
+  perspective:1000px;
 }
 .pf-backdrop-matrix{
-  display:flex;align-items:center;gap:32px;width:144vw;flex-shrink:0;
+  display:flex;align-items:center;gap:var(--cover-gap);width:144vw;height:150vh;flex-shrink:0;
   transform-style:preserve-3d;
-  transform:translate3d(0,0,-80px) rotateX(14deg) rotateY(-24deg) rotateZ(6deg);
+  transform:translate3d(0,0,-320px) rotateX(25deg) rotateY(-45deg) rotateZ(15deg);
 }
 .pf-backdrop-column{
-  flex:1;min-width:0;display:grid;gap:32px;
-  grid-template-rows:repeat(var(--rows,3),var(--cover-height));
+  position:relative;flex:1;min-width:0;height:100%;transform-style:preserve-3d;
   transform:translate3d(0,var(--column-y,0px),0);
 }
-.pf-backdrop-cover{min-width:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .6s ease-out}
+.pf-backdrop-matrix.is-moving,.pf-backdrop-matrix.is-moving .pf-backdrop-column{will-change:transform}
+.pf-backdrop-cover{
+  position:absolute;inset-inline:0;height:var(--cover-height);
+  top:calc(50% - var(--cover-height)/2 + var(--cover-row,0)*(var(--cover-height) + var(--cover-gap)));
+  min-width:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s ease-out;
+}
 .pf-backdrop-cover.is-loaded{opacity:.85}
 .pf-backdrop-cover img{display:block;width:100%;height:100%;object-fit:contain}
 .pf-retry{display:block;margin:16px auto 0}
 @media(max-width:760px){
-  .pf-backdrop{--cover-height:clamp(340px,100vw,620px)}
-  .pf-backdrop-matrix{width:164vw;gap:24px}
-  .pf-backdrop-column{gap:24px}
+  .pf-backdrop{--cover-height:clamp(340px,100vw,620px);--cover-gap:24px}
+  .pf-backdrop-matrix{width:164vw}
   .pf-backdrop::after{
     background:linear-gradient(180deg,rgba(var(--backdrop-rgb),.83),rgba(var(--backdrop-rgb),.73) 60%,var(--bg-1));
   }

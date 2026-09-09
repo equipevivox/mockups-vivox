@@ -7,10 +7,10 @@
   const versions=new Map();
   const coverSession=Date.now();
   let items = [], filter = "todos";
-  let loading=false, loaded=false, refreshTimer=0, refreshPending=false, signature="";
+  let loading=false, loaded=false, refreshTimer=0, refreshPending=false, signature="", active=true;
 
-  // Uma nova visita também busca a capa atual quando o PDF foi reenviado com o mesmo nome.
-  const coverUrl=m=>pageUrl(encodeURIComponent(m.id),0)+"?v="+encodeURIComponent(versions.get(m.id)||coverSession);
+  // A versão vem do banco: um reenvio também chega às abas abertas em outros computadores.
+  const coverUrl=m=>pageUrl(encodeURIComponent(m.id),0,m.cover_version||versions.get(m.id)||coverSession);
 
   document.querySelectorAll(".pf-chip").forEach(chip=>{
     chip.addEventListener("click",()=>{
@@ -58,13 +58,14 @@
   }
 
   async function load(){
+    if(!active || document.hidden) return;
     if(loading){ refreshPending=true; return; }
     loading=true;
     clearTimeout(refreshTimer);
     try{
       const all = await listPublicMockups();
       items = all.filter(m=>m.is_public===true);
-      const nextSignature=JSON.stringify(items)+JSON.stringify(Array.from(versions));
+      const nextSignature=JSON.stringify(items)+JSON.stringify(items.map(coverUrl));
       if(!loaded || nextSignature!==signature){
         const focusedId=document.activeElement.closest(".pf-card")?.getAttribute("href");
         render();
@@ -82,8 +83,8 @@
       }
     }finally{
       loading=false;
-      if(!document.hidden){
-        refreshTimer=setTimeout(load,refreshPending ? 0 : 30000);
+      if(active && !document.hidden){
+        refreshTimer=setTimeout(load,refreshPending ? 0 : 15000);
       }
       refreshPending=false;
     }
@@ -104,7 +105,7 @@
     }catch(e){ /* Uma notificação inválida não deve interromper a página. */ }
     refreshWhenVisible();
   });
-  window.addEventListener("pagehide",()=>clearTimeout(refreshTimer));
-  window.addEventListener("pageshow",event=>{ if(event.persisted) refreshWhenVisible(); });
+  window.addEventListener("pagehide",()=>{ active=false; clearTimeout(refreshTimer); });
+  window.addEventListener("pageshow",event=>{ active=true; if(event.persisted) refreshWhenVisible(); });
   load();
 })();

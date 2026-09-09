@@ -77,17 +77,17 @@ Os pins ficam **dentro** do elemento da página (`.pg`) ou do painel do folder, 
 
 ## Fundo de capas do portfólio
 
-O fundo de `/` e `/portfolio` usa uma galeria em perspectiva 3D, com colunas que se deslocam ao rolar a página. O exemplo de referência em React/Framer Motion foi adaptado para CSS e JavaScript nativos, preservando a arquitetura sem build.
+O fundo de `/` e `/portfolio` usa uma galeria em perspectiva 3D, com colunas que se deslocam em sentidos opostos ao rolar. O exemplo de referência em React/Framer Motion foi adaptado para CSS e JavaScript nativos, preservando a arquitetura sem build. O progresso vem do elemento que realmente rola (documento ou contêiner), de início a fim; a matriz usa os ângulos e a mola da referência, com profundidade ajustada para preservar o zoom solicitado. Não há uma seção vazia de 600vh nem cópias de capas para prolongar o efeito.
 
 O cabeçalho e os filtros ficam centralizados. A lista apresenta capas com largura de até 420px, com até quatro materiais por linha a partir de 1680px, três entre 900px e 1679px, dois entre 600px e 899px e um abaixo de 600px. Linhas incompletas também ficam centralizadas. A base do tema escuro é preto absoluto (`#000000`); o tema claro usa `#faf9f6`, com sobreposições da mesma cor sobre as capas do fundo, que se aproximam ao rolar. O rodapé “ferramenta interna de revisão de materiais” foi removido.
 
 - A imagem é a primeira página (`{slug}/pages/0.jpg`) de cada material publicado (`is_public = true`) com pelo menos uma página.
 - Cada material ocupa uma única posição no fundo. Posições sem material ficam transparentes; não há imagens de exemplo, capas repetidas para preencher a tela ou cartões de substituição.
-- Um material novo preenche a próxima posição livre. Os filtros de categoria atuam na grade de cartões; o fundo mantém todos os materiais publicados.
-- A lista é consultada a cada 30 segundos enquanto a aba está visível, ao voltar à aba e ao recuperar a conexão. Envios, publicações, exclusões e mudanças de nome no painel notificam outras abas do mesmo navegador para atualizar imediatamente quando visíveis.
+- Um material novo preenche a próxima posição livre. A matriz tem altura independente da quantidade e cada capa tem posição absoluta na coluna; incluir mais materiais não recentraliza as capas anteriores. As próximas imagens entram pela direção de movimento da coluna. Os filtros de categoria atuam na grade de cartões; o fundo mantém todos os materiais publicados.
+- A lista é consultada a cada 15 segundos enquanto a aba está visível, ao voltar à aba e ao recuperar a conexão. Envios, publicações, exclusões e mudanças de nome no painel notificam outras abas do mesmo navegador para atualizar imediatamente quando visíveis.
 - Novos uploads continuam respeitando **Mostrar no portfólio**: enviar um material privado não o coloca no fundo público. Despublicar ou excluir um material remove sua capa na próxima atualização.
-- Se uma imagem não carregar, seu espaço permanece vazio e uma consulta posterior tenta carregá-la novamente. Falhas temporárias na consulta preservam o último resultado válido.
-- Ao reenviar um PDF com o mesmo nome, a notificação do painel renova a URL da capa nas outras abas desse navegador. Uma nova visita também busca a imagem atual. Abas já abertas em outro computador precisam ser recarregadas para renovar uma capa substituída sem mudança nos dados do material.
+- As imagens decorativas são pré-carregadas sem depender da visibilidade de um elemento transformado. A nova versão substitui a anterior somente ao carregar; se falhar ou ultrapassar 15 segundos, seu espaço fica vazio. A consulta seguinte tenta de novo com outra chave de cache. Respostas atrasadas não podem recolocar uma versão antiga. Falhas temporárias na consulta de materiais preservam o último resultado válido.
+- `mockups.cover_version` identifica a versão das páginas no banco. Um trigger renova esse UUID quando o envio atualiza `num_pages` ou `aspect`, mesmo mantendo os valores anteriores. Edições apenas do nome ou da publicação não renovam a imagem. Portfólio, miniaturas do admin e visualizador usam `?cacheNonce=<versão>` nas URLs para renovar o cache do navegador e do Storage. Assim, um reenvio também chega a abas abertas em outros computadores na próxima consulta, sem recarregar a página.
 - O fundo não recebe cliques nem foco e é ignorado por leitores de tela. Usa quatro colunas no desktop, duas no celular e fica estático com a preferência de movimento reduzido.
 
 ## Stack
@@ -114,6 +114,8 @@ ui.css                       portfólio, balões de comentário e admin
 assets/vivox-grid.svg         logo original no portfólio e no painel
 assets/vivox-grid-light.svg   mesma logo com letras escuras para o tema claro
 tests/material-name.test.cjs validação de nomes e gravação sem alterar o slug
+tests/portfolio-background.test.cjs posições, respostas atrasadas e movimento
+supabase/migrations/          migrações desta aplicação, incluindo versão das capas
 lib/                         jquery 1.7 + turn.min.js
 pdf.worker.min.js            worker do PDF.js (precisa ser same-origin)
 vercel.json                  rewrites das rotas
@@ -135,6 +137,7 @@ Projeto `kthestvyzvbbpnsulned` (região sa-east-1).
 | `aspect` | float | altura/largura da página |
 | `type` | text | `revista` \| `mockup` \| `folder` |
 | `is_public` | bool | aparece no portfólio |
+| `cover_version` | uuid | versão de cache das páginas, gerada pelo banco no envio |
 | `expires_at` | timestamptz | não usado (sempre null) |
 
 **`public.comments`**
@@ -153,6 +156,10 @@ Projeto `kthestvyzvbbpnsulned` (região sa-east-1).
 Guarda **imagens renderizadas**, nunca o PDF original (evita o limite de tamanho e abre sem re-renderizar).
 
 ### Migração (já aplicada em produção)
+
+A versão das capas foi acrescentada pela migração [20260909030733_versionar_capas_dos_materiais.sql](supabase/migrations/20260909030733_versionar_capas_dos_materiais.sql), já aplicada ao projeto existente. O trigger `mockups_renovar_versao_capa` executa a função `renovar_versao_capa` com os privilégios do chamador e `search_path` vazio; não altera as políticas existentes. A renovação foi verificada como `anon` em transação revertida, inclusive para reenvio com quantidade e tamanho de páginas iguais.
+
+As colunas anteriores de publicação e comentários também já estão aplicadas:
 
 ```sql
 alter table public.mockups  add column if not exists is_public  boolean not null default false;
@@ -174,6 +181,8 @@ python -m http.server 8130
 
 As rotas limpas (`/portfolio`, `/m/SLUG`) **só existem no Vercel**. Localmente use:
 `viewer.html?m=SLUG` — o `viewer.js` aceita tanto o caminho quanto a query.
+
+Verificações sem dependências adicionais: `node --test tests/*.test.cjs`. Os testes de navegador e de banco devem usar dados isolados ou transações revertidas, preservando os materiais reais.
 
 ## Deploy
 

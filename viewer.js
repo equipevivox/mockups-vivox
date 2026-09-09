@@ -63,7 +63,7 @@
       state.aspect = mk.aspect || (60/49);
       const n = mk.num_pages||0;
       if(!n){ fail("Material sem páginas."); return; }
-      state.pages = Array.from({length:n},(_,i)=>VX.pageUrl(slug,i));
+      state.pages = Array.from({length:n},(_,i)=>VX.pageUrl(slug,i,mk.cover_version));
       state.total = n;
 
       $("docName").textContent = state.name.replace(/\.pdf$/i,"");

@@ -69,7 +69,7 @@
       const link=location.origin+"/m/"+encodeURIComponent(m.id);
       const card=document.createElement("div"); card.className="card card--adm";
       card.innerHTML=`
-        <div class="adm-thumb" style="background-image:url('${VX.pageUrl(m.id,0)}')"></div>
+        <div class="adm-thumb" style="background-image:url('${VX.pageUrl(m.id,0,m.cover_version)}')"></div>
         <div class="meta">
           <div class="name"><span class="pf-type pf-type--${m.type}">${VX.TYPE_LABEL[m.type]}</span> <span class="material-name">${VX.esc((m.name||m.id).replace(/\.pdf$/i,""))}</span></div>
           <div class="sub">
@@ -261,7 +261,7 @@
       const existing=await VX.getMockup(slug);
       await uploadPages(slug, out.images);
       const row={ num_pages:out.images.length, aspect:out.aspect, type, expires_at:null };
-      // Ao substituir o PDF, preserva o nome editado e o estado de publicação.
+      // O trigger renova cover_version após o envio; nome e publicação são preservados.
       const query=existing ? sb.from("mockups").update(row).eq("id",slug)
         : sb.from("mockups").insert({id:slug,name:file.name,...row});
       const { error } = await query.select("id").single();

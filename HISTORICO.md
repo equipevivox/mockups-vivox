@@ -2,6 +2,16 @@
 
 Acrescente novas entradas no início, usando a data em `America/Cuiaba`. Registre o pedido, as alterações, decisões, verificações e pendências. O diff completo de cada entrega fica no histórico Git; este arquivo explica o contexto. Consulte [CONTEXTO.md](CONTEXTO.md) para o estado atual.
 
+## 2026-09-08 — Correção da atualização das capas e do parallax
+
+**Pedido:** corrigir capas de fundo que não atualizavam automaticamente e o parallax, usando o novo componente React enviado como referência.
+
+**Causas:** a URL da capa dependia de uma versão local à visita, sem identificar reenvios feitos em outro computador; o cache do Storage também precisava de uma chave própria. A matriz variava de altura ao receber novas capas e recentralizava as existentes. O movimento usava deslocamentos curtos fixos e apenas a rolagem da janela, com um intervalo mínimo que impedia concluir a perspectiva em páginas curtas. Imagens fora da área visível transformada dependiam de carregamento lazy.
+
+**Correções:** aplicada e versionada a migração `20260909030733_versionar_capas_dos_materiais.sql`, acrescentando `cover_version` com renovação automática após atualização dos dados das páginas, inclusive quando estes mantêm os mesmos valores. Capas e páginas usam `cacheNonce` com essa versão; renomear/publicar não invalida imagens. Consulta pública a cada 15 segundos somente com a aba visível, além dos avisos já existentes. Pré-carregamento independente de visibilidade, substituição após carregar, descarte de respostas antigas, timeout e nova tentativa sem cache de falha. Matriz de altura estável, capas posicionadas por slot e colunas em sentidos opostos; progresso calculado pelo elemento que realmente rola, atualizado após mudanças de tamanho; mola e ângulos da referência, com zoom preservado. Mantidas a arquitetura estática, capas reais sem repetição, posições vazias, temas e movimento reduzido. Renovadas URLs dos scripts/estilos e miniaturas do admin/visualizador.
+
+**Verificações:** dez testes automatizados e sintaxe JavaScript; verificação do trigger como `anon` em transação revertida, confirmando versão nova após reenvio, campos restantes preservados e versão estável ao editar nome/publicação. No Edge, atualização automática da capa em 15,5 segundos sem recarga/aviso entre abas; consultas suspensas ao ocultar a aba e retomadas ao voltar. Testes isolados com 20 capas confirmaram deslocamento zero das quatro existentes após inclusão de 16. Scroll do documento e de contêiner, reversão, desktop/celular, ausência de transbordamento, movimento reduzido e fundo decorativo conferidos. Visualizador com 24 páginas e avanço da página 1 para 2 confirmado após o carregamento completo, com URLs versionadas e sem alterar o motor de folheamento. Nenhuma imagem real foi enviada ou substituída pelos testes. O advisor não apontou a função nova; alertas anteriores do projeto compartilhado permanecem fora desta correção.
+
 ## 2026-09-08 — Temas claro/escuro, logo no admin e edição de nomes
 
 **Pedido:** adicionar botão de tema claro/escuro à página inicial, incluir a logo no admin e permitir ajustar o nome exibido dos materiais.
