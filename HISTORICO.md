@@ -14,6 +14,8 @@ Acrescente novas entradas no início, usando a data em `America/Cuiaba`. Registr
 
 **Integração GitHub:** após a confirmação de acesso do usuário no GitHub, a conexão por `vercel git connect` retornou `Connected`. A API do projeto confirmou `equipevivox/mockups-vivox` como origem GitHub e `main` como branch de produção. A pasta local continua conectada a `origin/main` e usa o Git autenticado para enviar código e contexto.
 
+**Validação da publicação automática:** o envio do commit `77ae404` à `main` gerou o deployment `dpl_GcB5EQBF9pEJCCqSGaBZxSWuJLXq`, confirmado pela API com origem `git`, destino `production`, a mesma identificação do commit e estado `READY`. Nenhuma pendência de conexão permanece.
+
 ## 2026-09-08 — Fundo 3D com as capas publicadas
 
 **Pedido:** usar o componente de galeria 3D enviado como referência para o fundo da tela; preencher com capas reais, deixar posições excedentes vazias e incorporar novos materiais.
