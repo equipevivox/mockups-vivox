@@ -10,7 +10,7 @@ Acrescente novas entradas no início, usando a data em `America/Cuiaba`. Registr
 
 **Verificações:** dez testes existentes passaram; sintaxe e diff conferidos. Edge em 1440×1000, 390×844 e 320×740: login, painel, home, temas, persistência após sair/recarregar, centralização e ausência de transbordamento. Formulário de renomear aberto e cancelado sem gravar; capas reais preservadas. Confirmados quatro grupos animados, pausa fora da tela e ao simular aba oculta, retomada e ausência de animação com movimento reduzido nativo. Favicon respondeu 200 com MIME SVG. Detector visual em modo limitado apontou somente Inter, mantida conforme a identidade. Nenhum material ou comentário foi alterado pelos testes.
 
-**Publicação e R2:** alteração visual preparada a partir de main (11ca82a), independente da branch codex/cloudflare-r2. A integração R2 continua pendente de autorização explícita para guardar os segredos criptografados na Vercel; esta entrega visual não ativa o R2 nem modifica credenciais. Publicar por GitHub na main e conferir SHA/deployment/arquivos em produção.
+**Publicação e R2:** alteração visual preparada a partir de main (11ca82a), independente da branch codex/cloudflare-r2. A integração R2 continua pendente de autorização explícita para guardar os segredos criptografados na Vercel; esta entrega visual não ativa o R2 nem modifica credenciais. Publicação confirmada em main no commit 5edd3af, deployment dpl_Cgw1kR7iom7SHNAuSUeZNhVEupZ9 em estado READY. Portfólio, painel, visualizador, favicon, estilos e scripts responderam 200 no domínio grid.vivoxmarketing.com.br e corresponderam à versão local validada.
 
 ## 2026-09-08 — Correção da atualização das capas e do parallax
 

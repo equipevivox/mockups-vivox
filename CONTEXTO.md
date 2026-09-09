@@ -21,6 +21,8 @@
 
 ## Verificações da entrega visual
 
+- Publicação confirmada em main no commit 5edd3af, deployment dpl_Cgw1kR7iom7SHNAuSUeZNhVEupZ9 em estado READY. Portfólio, painel, visualizador, favicon, estilos e scripts responderam 200 no domínio grid.vivoxmarketing.com.br e corresponderam à versão local validada.
+
 - Dez testes existentes passaram; sintaxe dos scripts e diff conferidos. Detector visual limitado apontou apenas Inter, preservada conforme a identidade VIVOX.
 - Edge: painel, login e home em desktop 1440×1000 e celular 390×844/320×740, dois temas, persistência após recarga, logo centralizada e nenhum transbordamento horizontal. Formulário de renomear aberto e cancelado sem gravar dados.
 - Animação avança somente quando visível, pausa ao rolar e ao simular aba oculta, retoma ao voltar e fica ausente sob movimento reduzido nativo. Favicon HTTP 200, MIME SVG. Nenhum material/comentário real foi alterado.
