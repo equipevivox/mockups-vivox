@@ -14,11 +14,12 @@ Manter o registro de alterações e o contexto no GitHub para retomar o trabalho
 
 - Repositório: `https://github.com/equipevivox/mockups-vivox`.
 - Branch principal: `main`. A pasta de trabalho foi conectada a `origin` e passou a acompanhar `origin/main`.
-- Base desta tarefa: commit `65b66b5`, com o fundo de capas já enviado ao GitHub.
+- Base desta tarefa: commit `0d074af`, com a integração Vercel–GitHub validada.
 - Vercel: projeto existente `mockups-vivox`, ID `prj_gpzWlIxg6CuooSrEcKo2pTPiV6D8`, equipe `equipevivox-7341s-projects` (`team_14ydzpU22f732BVCX1lK6WA2`). A pasta está vinculada por `.vercel/project.json`, que é local e não deve ser versionado.
 - Produção: `https://mockups.vivoxmarketing.com.br`, com alias `https://mockups-vivox.vercel.app`.
 - Integração Vercel–GitHub conectada a `equipevivox/mockups-vivox`; branch de produção `main`. Os próximos envios a essa branch devem disparar a publicação automática no mesmo projeto.
 - Aplicação estática em HTML/CSS/JS, sem etapa de build; arquivos de portfólio, administração e visualizador presentes.
+- Textos de abertura atualizados conforme solicitação do usuário: eyebrow **MATERIAIS VIVOX**, título **Materiais criados para sua marca** e descrição que orienta explorar os materiais, folhear páginas e comentar. Filtros mantidos como **Todos**, **Revistas**, **Folders** e **Mockups**, pois não foram enviados novos rótulos.
 - Implementado o fundo 3D do portfólio em `portfolio-background.js` e `portfolio-background.css`, a partir do componente de referência enviado pelo usuário, adaptado para a stack estática.
 - O fundo usa uma capa por material público com páginas, mantém posições não utilizadas vazias e incorpora novos materiais sem repetir as capas anteriores. Não foram acrescentadas imagens demonstrativas.
 - O portfólio consulta apenas materiais públicos a cada 30 segundos com a aba visível e recebe notificações do painel após envios, publicações ou exclusões. Há duas revistas publicadas na consulta realizada nesta tarefa.

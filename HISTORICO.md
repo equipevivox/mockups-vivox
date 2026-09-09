@@ -2,6 +2,14 @@
 
 Acrescente novas entradas no início, usando a data em `America/Cuiaba`. Registre o pedido, as alterações, decisões, verificações e pendências. O diff completo de cada entrega fica no histórico Git; este arquivo explica o contexto. Consulte [CONTEXTO.md](CONTEXTO.md) para o estado atual.
 
+## 2026-09-08 — Textos de abertura da página de materiais
+
+**Pedido:** substituir o eyebrow, o título e a descrição pelos textos fornecidos pelo usuário.
+
+**Alterações:** `index.html` passa a exibir **MATERIAIS VIVOX**, **Materiais criados para sua marca** e a descrição “Explore os materiais desenvolvidos pela VIVOX. Abra cada projeto para visualizar os detalhes, folhear as páginas e deixar seus comentários.”, com quebra de linha entre as frases. Preservados o destaque dourado do título e os filtros **Todos**, **Revistas**, **Folders** e **Mockups**; o pedido não trouxe novos nomes para os filtros.
+
+**Verificação:** revisão do diff e dos textos no HTML. Alteração restrita ao conteúdo de abertura, sem modificar scripts, rotas ou comportamento das capas. A publicação segue o fluxo automático da branch `main`.
+
 ## 2026-09-08 — Vínculo ao projeto existente e publicação na Vercel
 
 **Pedido:** conectar à Vercel, usar o projeto já existente `mockups-vivox` e vinculá-lo ao GitHub.
