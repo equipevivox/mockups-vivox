@@ -1,22 +1,10 @@
 /* Capas reais em perspectiva. As posições sem material são transparentes. */
-.pf-page{--bg-0:#000;--bg-1:#000;--backdrop-rgb:0,0,0;isolation:isolate;background:var(--bg-0);min-height:100svh;color-scheme:dark}
-[data-theme="light"] .pf-page{
-  --bg-0:#faf9f6;--bg-1:#faf9f6;--backdrop-rgb:250,249,246;
-  --text:#201d17;--text-dim:#554f44;--text-faint:#686052;
-  --gold:#785719;--gold-bright:#876224;--gold-muted:#785719;
-  --border:rgba(120,87,25,.23);--border-strong:rgba(120,87,25,.42);
-  --gold-grad:linear-gradient(135deg,#E3D2AE,#CCB691 45%,#AA864C);color-scheme:light;
-}
+.pf-page{isolation:isolate;min-height:100svh}
 [data-theme="light"] .pf-page .grad{background:none;color:#785719}
-[data-theme="light"] .pf-brand-logo{display:none}
-[data-theme="light"] .pf-brand-logo--light{display:block}
-[data-theme="light"] .theme-sun{display:none}
-[data-theme="light"] .theme-moon{display:block}
 [data-theme="light"] .pf-page .pf-type--mockup{color:#245a9b;border-color:rgba(36,90,155,.4)}
 [data-theme="light"] .pf-page .pf-type--folder{color:#206747;border-color:rgba(32,103,71,.4)}
 [data-theme="light"] .pf-page .pm-obj{box-shadow:0 18px 42px rgba(42,33,17,.22)}
 [data-theme="light"] .pf-page .toast{background:#fff;color:var(--text)}
-[data-theme="light"] .pf-page ::selection{background:#d9c49e;color:#201d17}
 .pf-page .pf-wrap{position:relative;z-index:1}
 .pf-page .pf-head p,.pf-page .pf-meta{text-shadow:0 2px 12px var(--bg-0)}
 .pf-page .pf-chip{background-color:var(--bg-1)}

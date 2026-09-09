@@ -23,9 +23,9 @@
 - URLs de PUT duram dez minutos, vinculadas à chave/tipo/tamanho. Limites: 500 páginas/PDF, 7 MB/JPEG, cinco anexos/comentário de até 10 MB em JPG/PNG/WebP/GIF.
 - CORS **configurado e verificado** no painel Cloudflare para os domínios grid e alias Vercel e localhost/127.0.0.1:8130. Credencial S3 permite objetos, mas não gestão de CORS; configuração feita na sessão já autenticada do usuário. Não ampliadas permissões do token.
 - Chaves somente em `.env.r2.local` ignorado e, após autorização, variáveis criptografadas da Vercel. Nunca registrar os valores. O token geral Cloudflare não é usado pela aplicação.
-- **Bloqueio concreto:** revisão automática rejeitou o envio dos segredos à Vercel por exigir autorização explícita para esse destino/payload. Pergunta enviada ao usuário, ainda sem resposta ao registrar este estado. Nenhuma dessas variáveis foi enviada à Vercel, nenhum deploy de produção desta integração foi feito, e `main` continua na versão anterior.
+- **Bloqueio concreto:** revisão automática rejeitou o envio dos segredos à Vercel por exigir autorização explícita para esse destino/payload. Pergunta enviada ao usuário, ainda sem resposta ao registrar este estado. Nenhuma dessas variáveis foi enviada à Vercel, nenhum deploy de produção desta integração foi feito, e a integração continua fora da `main`.
 
-- Commit inicial da integração: `77b5707` publicado e confirmado no GitHub. Prévia da branch: `dpl_6oMoLYv9nd3738ER3Jmt2HrMkkrf`, build **READY**, função presente; API responde 503 de configuração ausente, como esperado enquanto faltam variáveis. Produção permanece em `11ca82a`. Rotas `/`, `/portfolio`, `/admin` e `/m/TESTE` retornaram 200 na prévia; `.env.r2.local`, `server/auth.cjs` e `package.json` retornaram 404.
+- Commit inicial da integração: `77b5707` publicado e confirmado no GitHub. Prévia da branch: `dpl_6oMoLYv9nd3738ER3Jmt2HrMkkrf`, build **READY**, função presente; API responde 503 de configuração ausente, como esperado enquanto faltam variáveis. A interface de produção foi atualizada separadamente para `5edd3af`; o R2 continua fora de produção. Rotas `/`, `/portfolio`, `/admin` e `/m/TESTE` retornaram 200 na prévia; `.env.r2.local`, `server/auth.cjs` e `package.json` retornaram 404.
 
 ## Retomar e ativar
 
@@ -50,9 +50,16 @@
 - Exclusão pelo mesmo serviço conferida: anexo passou a 404, material removido, zero arquivos dos testes nas pastas R2. Banco voltou a cinco materiais existentes com `r2_prefix` nulo; nenhum material real foi editado.
 - Portfólio preservado com quatro materiais publicados, capas carregadas, teste ausente e sem transbordamento. Inspeção em desktop e 390×844. Arquivos `.env.r2.local`, `server/auth.cjs` e `package.json` retornam 404 no servidor local.
 
+## Entrega visual incorporada da main
+
+- Publicação confirmada em main no commit 5edd3af, deployment dpl_Cgw1kR7iom7SHNAuSUeZNhVEupZ9 em estado READY. Portfólio, painel, visualizador, favicon, estilos e scripts responderam 200 em grid.vivoxmarketing.com.br e corresponderam à versão local validada.
+- Interface integrada nesta branch sem alterar a pendência de autorização do R2. Conflitos limitados ao contexto/histórico e às URLs de estilos foram resolvidos preservando a API e os scripts de upload R2.
+- Favicon com o V original; quadradinhos da logo animados sutilmente com pausas, suspensão fora da tela/aba oculta e movimento reduzido. Painel/login com logo centralizada e tema claro/escuro compartilhado com a inicial; ações de 44px e miniaturas ampliadas. Novos assets ficam em assets/, já incluído na lista pública do build.
+- Dez testes da versão estática e inspeção Edge em desktop/celular passaram. Após integrar nesta branch, os 20 testes passaram e o build incluiu os novos assets sem expor arquivos privados. Nenhum material real alterado nesta entrega visual.
+
 ## Interface e regras preservadas
 
-- Logo VIVOX Grid centralizada, sem botão de admin; `/admin` direto, com logo no login/painel. Tema claro/escuro na inicial, preto absoluto por padrão, preferência em `vivox_theme`.
+- Logo VIVOX Grid centralizada, sem botão de admin; `/admin` direto, com logo no login/painel. Tema claro/escuro na inicial e no painel/login, preto absoluto por padrão, preferência em `vivox_theme`.
 - Texto principal “Materiais criados para sua marca”, eyebrow MATERIAIS VIVOX, filtros Todos/Revistas/Folders/Mockups. Textos centralizados; revistas grandes, linhas 4/3/2/1; sem rodapé.
 - Nome exibido editável até 120 caracteres, preservando slug/links. Fundo usa primeira página real dos materiais públicos, sem duplicar ou preencher com exemplos, posições estáveis e vazio em falhas; filtros só alteram cartões.
 - Consulta a cada 15 segundos somente em aba visível, mais foco/conexão/avisos entre abas. Fundo mantém parallax baseado no contêiner real, movimento reduzido, aria-hidden e ausência de interação.

@@ -4,21 +4,37 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>VIVOX · Admin</title>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=20260909-4" />
 <meta name="robots" content="noindex" />
+<script src="/theme.js?v=20260909-4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <link rel="stylesheet" href="/style.css" />
-<link rel="stylesheet" href="/ui.css?v=20260909-3" />
+<link rel="stylesheet" href="/ui.css?v=20260909-4" />
+<link rel="stylesheet" href="/assets/identity.css?v=20260909-4" />
+<script src="/assets/brand.js?v=20260909-4" defer></script>
 </head>
-<body>
+<body class="admin-page">
+
+  <header class="topbar pf-topbar admin-topbar">
+    <a class="brand" href="/portfolio">
+      <img data-brand-motion class="pf-brand-logo" src="/assets/vivox-grid.svg" alt="VIVOX Grid" width="307" height="41" />
+      <img data-brand-motion class="pf-brand-logo pf-brand-logo--light" src="/assets/vivox-grid-light.svg" alt="VIVOX Grid" width="307" height="41" />
+      <span class="admin-brand-label">Painel admin</span>
+    </a>
+    <button class="ghost-btn theme-toggle" id="themeToggle" type="button" aria-label="Ativar tema claro" title="Ativar tema claro">
+      <svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
+      <svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"/></svg>
+      <span>Tema claro</span>
+    </button>
+  </header>
 
   <!-- ===== LOGIN ===== -->
   <div class="login-wrap" id="loginWrap">
     <form class="login-card" id="loginForm">
-      <div class="admin-brand"><img src="/assets/vivox-grid.svg" alt="VIVOX Grid" width="307" height="41" /><span>Painel admin</span></div>
       <h1>Acesso restrito</h1>
       <p>Entre para gerenciar os materiais.</p>
       <div class="field"><label for="user">Usuário</label><input type="text" id="user" autocomplete="username" autocapitalize="off" spellcheck="false" /></div>
@@ -31,7 +47,7 @@
   <!-- ===== DASHBOARD ===== -->
   <div class="dash" id="dash">
     <div class="top">
-      <div class="admin-brand"><img src="/assets/vivox-grid.svg" alt="VIVOX Grid" width="307" height="41" /><span>Painel admin</span></div>
+      <h1>Painel de materiais</h1>
       <div class="top-actions">
         <a class="btn" href="/portfolio" target="_blank" rel="noopener">Ver portfólio</a>
         <button class="btn btn-gold" id="uploadBtn">

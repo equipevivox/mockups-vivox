@@ -2,6 +2,16 @@
 
 Acrescente novas entradas no início, usando a data em `America/Cuiaba`. Registre o pedido, as alterações, decisões, verificações e pendências. O diff completo de cada entrega fica no histórico Git; este arquivo explica o contexto. Consulte [CONTEXTO.md](CONTEXTO.md) para o estado atual.
 
+## 2026-09-09 — Favicon, marca animada e painel com a identidade da inicial
+
+**Pedido:** usar o V enviado como ícone da guia, animar sutilmente os quadradinhos da marca e manter no painel o estilo e as cores da página inicial.
+
+**Alterações:** preservado o ícone original em assets e criado favicon SVG com enquadramento quadrado para portfólio, admin e visualizador. As logos originais recebem animação apenas nos quatro quadrados, em CSS, com pausa longa e sem dependências; gradientes isolados por instância e imagem estática como alternativa. Movimento interrompido com a logo fora da tela, aba oculta ou preferência de movimento reduzido. Painel e login compartilham o tema persistido da inicial: preto absoluto/creme, superfícies neutras, dourado e Inter. Logo centralizada no topo, botão de tema, hierarquia e espaçamento revisados, miniaturas maiores e ações de 44px adaptadas ao celular. Modal fechado deixa de receber foco. Renovadas URLs dos assets alterados.
+
+**Verificações:** dez testes existentes passaram; sintaxe e diff conferidos. Edge em 1440×1000, 390×844 e 320×740: login, painel, home, temas, persistência após sair/recarregar, centralização e ausência de transbordamento. Formulário de renomear aberto e cancelado sem gravar; capas reais preservadas. Confirmados quatro grupos animados, pausa fora da tela e ao simular aba oculta, retomada e ausência de animação com movimento reduzido nativo. Favicon respondeu 200 com MIME SVG. Detector visual em modo limitado apontou somente Inter, mantida conforme a identidade. Nenhum material ou comentário foi alterado pelos testes.
+
+**Publicação e R2:** alteração visual preparada a partir de main (11ca82a), independente da branch codex/cloudflare-r2. A integração R2 continua pendente de autorização explícita para guardar os segredos criptografados na Vercel; esta entrega visual não ativa o R2 nem modifica credenciais. Publicação confirmada em main no commit 5edd3af, deployment dpl_Cgw1kR7iom7SHNAuSUeZNhVEupZ9 em estado READY. Portfólio, painel, visualizador, favicon, estilos e scripts responderam 200 no domínio grid.vivoxmarketing.com.br e corresponderam à versão local validada.
+
 ## 2026-09-09 — Integração dos próximos arquivos ao Cloudflare R2 (ativação pendente)
 
 **Pedido:** vincular os arquivos e usar o bucket `grid-files` do Cloudflare a partir de agora.

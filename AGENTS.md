@@ -30,8 +30,8 @@ O registro é atualizado durante o trabalho do agente; não é um serviço de si
 - `npm run build` apenas copia uma lista permitida de assets para `public/`; não transpila o frontend. Nunca incluir `.env*`, `server/`, testes ou documentação nessa saída.
 - Deploy: `vercel deploy . --prod --yes` (o alias de produção atualiza sozinho).
 - Escreva em **português do Brasil** — comentários de código, textos de interface e mensagens de commit.
-- Toda a interface segue a identidade VIVOX: dourado `#CCB691 → #876224`, fonte Inter e as variáveis CSS de `style.css`. O portfólio oferece tema claro e escuro; o padrão escuro usa **preto absoluto `#000000`** no fundo e nas sobreposições. Preserve a escolha em `vivox_theme`; painel e visualizador mantêm os fundos escuros originais. Não reintroduzir o rodapé “ferramenta interna de revisão de materiais”.
-- No topo público, manter a logo original `assets/vivox-grid.svg` centralizada e sem botão de admin. O painel é acessado diretamente por `/admin`.
+- Toda a interface segue a identidade VIVOX: dourado `#CCB691 → #876224`, fonte Inter e as variáveis CSS de `style.css`. O portfólio e o painel (incluindo login) oferecem tema claro e escuro; o padrão escuro usa **preto absoluto `#000000`** no fundo e nas sobreposições. Preserve a escolha em `vivox_theme`; o painel acompanha a escolha e o visualizador mantém os fundos escuros originais. Não reintroduzir o rodapé “ferramenta interna de revisão de materiais”.
+- No topo público, manter a logo original `assets/vivox-grid.svg` centralizada e sem botão de admin. O painel é acessado diretamente por `/admin`, também com logo centralizada e botão de tema. Os quadradinhos da marca usam animação sutil, pausada fora da tela, em aba oculta e com movimento reduzido. O favicon usa o V original fornecido pelo usuário.
 
 ## Armadilhas que já custaram caro
 
