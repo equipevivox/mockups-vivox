@@ -1,7 +1,6 @@
 /* Capas reais em perspectiva. As posições sem material são transparentes. */
-.pf-page{isolation:isolate}
-.pf-page .pf-wrap{position:relative;z-index:1;min-height:calc(100svh - 150px)}
-.pf-page .home-foot{position:relative;z-index:1}
+.pf-page{--bg-0:#000;--bg-1:#000;isolation:isolate;background:#000;min-height:100svh}
+.pf-page .pf-wrap{position:relative;z-index:1}
 .pf-page .pf-head p,.pf-page .pf-meta{text-shadow:0 2px 12px var(--bg-0)}
 .pf-page .pf-chip{background-color:var(--bg-1)}
 .pf-page :is(.pf-chip,.pf-card,.ghost-btn,.pf-retry):focus-visible{
@@ -13,8 +12,8 @@
 }
 .pf-backdrop::after{
   content:"";position:absolute;inset:0;
-  background:radial-gradient(ellipse at 50% 25%,rgba(12,11,9,.90),rgba(12,11,9,.78) 36%,rgba(12,11,9,.40) 80%),
-    linear-gradient(180deg,rgba(12,11,9,.4),transparent 30%,transparent 72%,var(--bg-1));
+  background:radial-gradient(ellipse at 50% 25%,rgba(0,0,0,.90),rgba(0,0,0,.78) 36%,rgba(0,0,0,.40) 80%),
+    linear-gradient(180deg,rgba(0,0,0,.4),transparent 30%,transparent 72%,var(--bg-1));
 }
 .pf-backdrop-frame{
   position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
@@ -39,7 +38,7 @@
   .pf-backdrop-matrix{width:164vw;gap:24px}
   .pf-backdrop-column{gap:24px}
   .pf-backdrop::after{
-    background:linear-gradient(180deg,rgba(12,11,9,.83),rgba(12,11,9,.73) 60%,var(--bg-1));
+    background:linear-gradient(180deg,rgba(0,0,0,.83),rgba(0,0,0,.73) 60%,var(--bg-1));
   }
 }
 @media(prefers-reduced-motion:reduce){

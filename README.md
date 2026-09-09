@@ -73,7 +73,7 @@ Os pins ficam **dentro** do elemento da página (`.pg`) ou do painel do folder, 
 
 O fundo de `/` e `/portfolio` usa uma galeria em perspectiva 3D, com colunas que se deslocam ao rolar a página. O exemplo de referência em React/Framer Motion foi adaptado para CSS e JavaScript nativos, preservando a arquitetura sem build.
 
-O cabeçalho e os filtros ficam centralizados. A lista apresenta capas ampliadas, com até quatro materiais por linha a partir de 1200px, três entre 900px e 1199px, dois entre 600px e 899px e um abaixo de 600px. Linhas incompletas também ficam centralizadas. As capas do fundo têm escala ampliada e se aproximam ao rolar, com escurecimento central para manter o texto legível.
+O cabeçalho e os filtros ficam centralizados. A lista apresenta capas com largura de até 420px, com até quatro materiais por linha a partir de 1680px, três entre 900px e 1679px, dois entre 600px e 899px e um abaixo de 600px. Linhas incompletas também ficam centralizadas. A base do portfólio é preto absoluto (`#000000`), com sobreposições pretas sobre as capas do fundo, que se aproximam ao rolar. O rodapé “ferramenta interna de revisão de materiais” foi removido.
 
 - A imagem é a primeira página (`{slug}/pages/0.jpg`) de cada material publicado (`is_public = true`) com pelo menos uma página.
 - Cada material ocupa uma única posição no fundo. Posições sem material ficam transparentes; não há imagens de exemplo, capas repetidas para preencher a tela ou cartões de substituição.

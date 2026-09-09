@@ -2,6 +2,14 @@
 
 Acrescente novas entradas no início, usando a data em `America/Cuiaba`. Registre o pedido, as alterações, decisões, verificações e pendências. O diff completo de cada entrega fica no histórico Git; este arquivo explica o contexto. Consulte [CONTEXTO.md](CONTEXTO.md) para o estado atual.
 
+## 2026-09-08 — Fundo preto absoluto, revistas maiores e remoção do rodapé
+
+**Pedido:** remover o rodapé “ferramenta interna de revisão”, aplicar preto absoluto ao fundo e ampliar a visualização dos mockups das revistas, usando a captura enviada como referência.
+
+**Alterações:** removido o elemento de rodapé e seu espaço reservado; base e sobreposições do portfólio em preto `#000000`; área da galeria ampliada para até 1880px e capas para até 420px. A lista usa quatro colunas a partir de 1680px, três a partir de 900px, duas a partir de 600px e uma em telas menores. Preservados textos centralizados, identidade dourada e capas decorativas em movimento. Renovadas as URLs dos estilos em `index.html` para evitar reutilização da versão anterior. Registrada a preferência pelo fundo preto nas instruções permanentes.
+
+**Verificações:** diff e inspeção visual no Edge em 2508 × 1361, 1440 × 1000 e 390 × 844. Confirmados fundo computado preto puro sem gradiente na base, rodapé ausente, duas capas reais carregadas e nenhum transbordamento horizontal ou erro de execução. Em 1440px, a largura renderizada das revistas aumentou de aproximadamente 270px para 398px. O detector visual operou com análise limitada e apontou apenas Inter, mantida por fazer parte da identidade VIVOX. Os testes não gravaram dados no backend.
+
 ## 2026-09-08 — Revistas ampliadas, textos centralizados e domínio grid
 
 **Pedido:** usar `grid.vivoxmarketing.com.br` mantendo o nome do projeto na Vercel; centralizar os textos; ampliar as revistas para linhas de quatro ou três e aumentar o zoom do fundo.

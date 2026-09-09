@@ -14,13 +14,14 @@ Manter o registro de alterações e o contexto no GitHub para retomar o trabalho
 
 - Repositório: `https://github.com/equipevivox/mockups-vivox`.
 - Branch principal: `main`. A pasta de trabalho foi conectada a `origin` e passou a acompanhar `origin/main`.
-- Base desta tarefa: commit `7b0723e`, com os novos textos publicados.
+- Base desta tarefa: commit `ee0e6e9`, com o portfólio centralizado e o domínio grid confirmado.
 - Vercel: projeto existente `mockups-vivox`, ID `prj_gpzWlIxg6CuooSrEcKo2pTPiV6D8`, equipe `equipevivox-7341s-projects` (`team_14ydzpU22f732BVCX1lK6WA2`). A pasta está vinculada por `.vercel/project.json`, que é local e não deve ser versionado.
 - Produção: `https://grid.vivoxmarketing.com.br`, com alias `https://mockups-vivox.vercel.app`. O usuário mudou o domínio personalizado; o projeto Vercel continua **mockups-vivox**.
 - Integração Vercel–GitHub conectada a `equipevivox/mockups-vivox`; branch de produção `main`. Os próximos envios a essa branch devem disparar a publicação automática no mesmo projeto.
 - Aplicação estática em HTML/CSS/JS, sem etapa de build; arquivos de portfólio, administração e visualizador presentes.
 - Textos de abertura atualizados conforme solicitação do usuário: eyebrow **MATERIAIS VIVOX**, título **Materiais criados para sua marca** e descrição que orienta explorar os materiais, folhear páginas e comentar. Filtros mantidos como **Todos**, **Revistas**, **Folders** e **Mockups**, pois não foram enviados novos rótulos.
-- Cabeçalho, filtros e metadados centralizados. Capas ampliadas de 152px fixos para até 300px; linhas de quatro em telas a partir de 1200px, três a partir de 900px, duas a partir de 600px e uma em telas menores. Linhas com poucos materiais ficam centralizadas sem cartões de preenchimento.
+- Cabeçalho, filtros e metadados centralizados. Capas ampliadas para até 420px e área de galeria de até 1880px; linhas de quatro em telas a partir de 1680px, três a partir de 900px, duas a partir de 600px e uma em telas menores. Linhas com poucos materiais ficam centralizadas sem cartões de preenchimento.
+- Rodapé “VIVOX · ferramenta interna de revisão de materiais” removido. Base do portfólio em preto absoluto `#000000`, com sobreposições pretas e capas decorativas preservadas. As referências dos dois estilos alterados em `index.html` têm versão na URL para evitar a reutilização de CSS anterior pelo navegador.
 - Zoom do fundo ampliado pela largura da matriz, altura das capas e profundidade; o movimento continua vinculado à rolagem. A máscara agora prioriza o centro para preservar a leitura dos textos.
 - A atualização dos textos foi publicada automaticamente a partir de `c1580a2`, com deployment `dpl_89UXNt3ck5xcHrEU3nXFdGSbwxRF` em estado `READY`. As rotas `/` e `/portfolio` em `mockups-vivox.vercel.app` responderam 200 com HTML idêntico ao arquivo local.
 - Implementado o fundo 3D do portfólio em `portfolio-background.js` e `portfolio-background.css`, a partir do componente de referência enviado pelo usuário, adaptado para a stack estática.
@@ -41,7 +42,7 @@ Manter o registro de alterações e o contexto no GitHub para retomar o trabalho
 ## Validação e limites
 
 - O usuário esclareceu que o endereço atual é `grid.vivoxmarketing.com.br`. A API Vercel confirmou esse domínio no mesmo projeto, com `verified: true`, e o site respondeu HTTP 200. A falha anterior referia-se ao domínio antigo; não há pendência de recuperar esse endereço.
-- Layout inspecionado com as duas capas reais em desktop (1440 × 1000) e celular (390 × 844), sem erros de execução ou transbordamento horizontal. Uma prévia local isolada com nove cartões confirmou linhas de 4/3/2/1 em larguras de 1440/1024/768/390px e centralização de linhas incompletas. Confirmados filtros, estado vazio, permanência das duas capas no fundo, zoom ao rolar e movimento reduzido. A análise mecânica dos arquivos alterados não apontou problemas.
+- Última inspeção visual no Edge em 2508 × 1361, 1440 × 1000 e 390 × 844: duas capas reais carregadas, cabeçalho centralizado, rodapé ausente, fundo computado `rgb(0, 0, 0)` sem gradiente na base e nenhum transbordamento horizontal ou erro de execução. As capas renderizaram com aproximadamente 391/398/323px de largura, respectivamente. O detector visual operou em modo limitado e apontou somente a fonte Inter, preservada como parte da identidade existente.
 - Acesso ao repositório, histórico e rastreamento de `main` conferidos.
 - A integração GitHub recusou escrita na tarefa anterior. Usar o Git local autenticado para publicar; outro computador precisa ter sua própria autenticação para enviar commits.
 - Sintaxe JavaScript e diff conferidos. A visualização local foi inspecionada no Edge em desktop (1440 × 1000) e celular (390 × 844), com as duas capas reais, sem transbordamento horizontal ou erros de execução.

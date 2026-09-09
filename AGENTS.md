@@ -29,7 +29,7 @@ O registro é atualizado durante o trabalho do agente; não é um serviço de si
 - Rodar local: `python -m http.server 8130` na raiz.
 - Deploy: `vercel deploy . --prod --yes` (o alias de produção atualiza sozinho).
 - Escreva em **português do Brasil** — comentários de código, textos de interface e mensagens de commit.
-- Toda a interface segue a identidade VIVOX: dourado `#CCB691 → #876224` sobre fundo escuro `#0F0F0B`, fonte Inter. Use as variáveis CSS já definidas em `style.css`.
+- Toda a interface segue a identidade VIVOX: dourado `#CCB691 → #876224`, fonte Inter e as variáveis CSS de `style.css`. No portfólio, usar **preto absoluto `#000000`** no fundo e nas sobreposições, conforme pedido do usuário; painel e visualizador mantêm os fundos escuros originais. Não reintroduzir o rodapé “ferramenta interna de revisão de materiais”.
 
 ## Armadilhas que já custaram caro
 
