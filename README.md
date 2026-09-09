@@ -2,7 +2,7 @@
 
 Aplicação web da VIVOX (marketing médico) para **publicar um portfólio** de materiais e **revisar PDFs** como peça folheável, com **comentários em balão ancorados no ponto da página** (estilo Figma).
 
-**Produção:** [mockups.vivoxmarketing.com.br](https://mockups.vivoxmarketing.com.br) · [alias Vercel](https://mockups-vivox.vercel.app)
+**Produção:** [grid.vivoxmarketing.com.br](https://grid.vivoxmarketing.com.br) · [alias Vercel](https://mockups-vivox.vercel.app)
 
 ## Retomar o trabalho em outro computador
 
@@ -72,6 +72,8 @@ Os pins ficam **dentro** do elemento da página (`.pg`) ou do painel do folder, 
 ## Fundo de capas do portfólio
 
 O fundo de `/` e `/portfolio` usa uma galeria em perspectiva 3D, com colunas que se deslocam ao rolar a página. O exemplo de referência em React/Framer Motion foi adaptado para CSS e JavaScript nativos, preservando a arquitetura sem build.
+
+O cabeçalho e os filtros ficam centralizados. A lista apresenta capas ampliadas, com até quatro materiais por linha a partir de 1200px, três entre 900px e 1199px, dois entre 600px e 899px e um abaixo de 600px. Linhas incompletas também ficam centralizadas. As capas do fundo têm escala ampliada e se aproximam ao rolar, com escurecimento central para manter o texto legível.
 
 - A imagem é a primeira página (`{slug}/pages/0.jpg`) de cada material publicado (`is_public = true`) com pelo menos uma página.
 - Cada material ocupa uma única posição no fundo. Posições sem material ficam transparentes; não há imagens de exemplo, capas repetidas para preencher a tela ou cartões de substituição.
@@ -177,7 +179,7 @@ npx --yes vercel link --yes --scope equipevivox-7341s-projects --project prj_gpz
 npx --yes vercel deploy . --prod --yes --scope equipevivox-7341s-projects
 ```
 
-Os domínios `mockups.vivoxmarketing.com.br` e `mockups-vivox.vercel.app` apontam para a publicação de produção. O projeto usa o preset **Other**, sem comandos de instalação ou build e com os arquivos na raiz. Preservar os rewrites de `vercel.json`.
+Os domínios `grid.vivoxmarketing.com.br` e `mockups-vivox.vercel.app` apontam para a publicação de produção. A mudança do domínio personalizado não altera o nome do projeto Vercel, que continua **mockups-vivox**. O projeto usa o preset **Other**, sem comandos de instalação ou build e com os arquivos na raiz. Preservar os rewrites de `vercel.json`.
 
 `.vercel/` e `.env*` são locais e ficam fora do Git. Cada computador deve autenticar sua própria sessão e executar o vínculo acima. O estado da integração automática com o GitHub está registrado em [CONTEXTO.md](CONTEXTO.md).
 

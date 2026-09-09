@@ -88,7 +88,7 @@
       return;
     }
     const p=progress, strength=mobile.matches ? .45 : 1;
-    matrix.style.transform=`translate3d(6vw,0,${-280+220*p}px) rotateX(${18-14*p}deg) rotateY(${-30+22*p}deg) rotateZ(${9-7*p}deg)`;
+    matrix.style.transform=`translate3d(0,0,${-80+220*p}px) rotateX(${14-10*p}deg) rotateY(${-24+18*p}deg) rotateZ(${6-4*p}deg)`;
     columns.forEach((column,i)=>{
       const direction=i%2===0 ? -1 : 1;
       column.style.setProperty("--column-y",`${direction*(p-.35)*180*strength}px`);

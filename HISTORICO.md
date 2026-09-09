@@ -2,6 +2,16 @@
 
 Acrescente novas entradas no início, usando a data em `America/Cuiaba`. Registre o pedido, as alterações, decisões, verificações e pendências. O diff completo de cada entrega fica no histórico Git; este arquivo explica o contexto. Consulte [CONTEXTO.md](CONTEXTO.md) para o estado atual.
 
+## 2026-09-08 — Revistas ampliadas, textos centralizados e domínio grid
+
+**Pedido:** usar `grid.vivoxmarketing.com.br` mantendo o nome do projeto na Vercel; centralizar os textos; ampliar as revistas para linhas de quatro ou três e aumentar o zoom do fundo.
+
+**Alterações:** cabeçalho, filtros e metadados centralizados; capas com largura de até 300px no lugar dos 152px fixos; lista com quatro colunas em telas largas, três em telas intermediárias, duas em tablets e uma em celulares, centralizando também as linhas incompletas. Ampliadas a matriz e as capas do fundo, com profundidade mais próxima e máscara escura concentrada no centro. Preservados a rolagem interativa, o movimento reduzido e os espaços sem material, sem criar capas de preenchimento.
+
+**Domínio:** a API da Vercel confirmou `grid.vivoxmarketing.com.br` como domínio verificado do projeto existente `mockups-vivox`; a página respondeu 200. Corrigidos README e contexto. O alerta anterior de DNS era referente ao endereço antigo, substituído pelo usuário; não foi necessário alterar DNS ou criar projeto.
+
+**Verificações:** sintaxe JavaScript e diff; avaliação visual no Edge em desktop e celular, com as duas revistas reais carregadas e sem erros de execução. Em prévia local descartável com nove cartões, confirmadas linhas de 4/3/2/1 em 1440/1024/768/390px, centralização e ausência de transbordamento horizontal. Confirmados filtros e estado vazio, preservação do fundo ao filtrar, mudança de perspectiva ao rolar e ausência de animação com movimento reduzido. A análise mecânica dos estilos e script alterados não apontou problemas. Nenhum dado foi gravado no backend pelos testes.
+
 ## 2026-09-08 — Textos de abertura da página de materiais
 
 **Pedido:** substituir o eyebrow, o título e a descrição pelos textos fornecidos pelo usuário.
