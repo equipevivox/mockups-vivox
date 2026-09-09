@@ -2,6 +2,13 @@
 
 Última atualização: 2026-09-09 (America/Cuiaba).
 
+## Próxima sessão em outra máquina
+
+- Clone o repositório ou atualize a cópia existente com git fetch origin e git pull --ff-only, após conferir que não há alterações locais a preservar. Abra a pasta do repositório no Codex e peça: “Leia README.md, AGENTS.md, CONTEXTO.md e as entradas recentes de HISTORICO.md antes de continuar”.
+- Use main para continuar a versão publicada. A interface está no commit 5edd3af; o registro de publicação 7160e70 teve deployment dpl_6hrdSGknrZMy9i8gN6eued3CKRbv confirmado em READY.
+- Para continuar a integração de arquivos, use codex/cloudflare-r2. Essa branch já inclui a interface da main desde 266379f e contém a API, migração, testes e instruções do R2. Não ativar a integração sem resolver a autorização de variáveis documentada abaixo.
+- Credenciais locais e sessões de GitHub/Vercel não são transferidas pelo Git. Configure-as de forma segura no novo computador quando forem necessárias; os nomes das variáveis estão no README da branch R2. A conversa completa não é necessária para retomar: decisões, validações e pendências estão nestes registros.
+
 ## Continuidade e produção
 
 - Repositório público `https://github.com/equipevivox/mockups-vivox.git`. Sempre ler README, AGENTS, este resumo e HISTORICO; conferir Git/fetch antes de editar e publicar registros/commits ao concluir.
