@@ -69,6 +69,19 @@ Os pins ficam **dentro** do elemento da página (`.pg`) ou do painel do folder, 
 
 ---
 
+## Fundo de capas do portfólio
+
+O fundo de `/` e `/portfolio` usa uma galeria em perspectiva 3D, com colunas que se deslocam ao rolar a página. O exemplo de referência em React/Framer Motion foi adaptado para CSS e JavaScript nativos, preservando a arquitetura sem build.
+
+- A imagem é a primeira página (`{slug}/pages/0.jpg`) de cada material publicado (`is_public = true`) com pelo menos uma página.
+- Cada material ocupa uma única posição no fundo. Posições sem material ficam transparentes; não há imagens de exemplo, capas repetidas para preencher a tela ou cartões de substituição.
+- Um material novo preenche a próxima posição livre. Os filtros de categoria atuam na grade de cartões; o fundo mantém todos os materiais publicados.
+- A lista é consultada a cada 30 segundos enquanto a aba está visível, ao voltar à aba e ao recuperar a conexão. Envios, publicações e exclusões no painel notificam outras abas do mesmo navegador para atualizar imediatamente quando visíveis.
+- Novos uploads continuam respeitando **Mostrar no portfólio**: enviar um material privado não o coloca no fundo público. Despublicar ou excluir um material remove sua capa na próxima atualização.
+- Se uma imagem não carregar, seu espaço permanece vazio e uma consulta posterior tenta carregá-la novamente. Falhas temporárias na consulta preservam o último resultado válido.
+- Ao reenviar um PDF com o mesmo nome, a notificação do painel renova a URL da capa nas outras abas desse navegador. Uma nova visita também busca a imagem atual. Abas já abertas em outro computador precisam ser recarregadas para renovar uma capa substituída sem mudança nos dados do material.
+- O fundo não recebe cliques nem foco e é ignorado por leitores de tela. Usa quatro colunas no desktop, duas no celular e fica estático com a preferência de movimento reduzido.
+
 ## Stack
 
 HTML/CSS/JS puro, sem build.
@@ -85,6 +98,8 @@ index.html  + portfolio.js   portfólio público
 viewer.html + viewer.js      visualização + comentários
 admin.html  + admin.js       painel (login, upload, publicação)
 common.js                    window.VX: cliente Supabase e helpers
+portfolio-background.js     distribuição das capas e movimento do fundo
+portfolio-background.css    perspectiva, sobreposição e responsividade do fundo
 style.css                    base e identidade
 ui.css                       portfólio, balões de comentário e admin
 lib/                         jquery 1.7 + turn.min.js

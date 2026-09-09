@@ -1,0 +1,51 @@
+/* Capas reais em perspectiva. As posições sem material são transparentes. */
+.pf-page{isolation:isolate}
+.pf-page .pf-wrap{position:relative;z-index:1;min-height:calc(100svh - 150px)}
+.pf-page .home-foot{position:relative;z-index:1}
+.pf-page .pf-head p,.pf-page .pf-meta{text-shadow:0 2px 12px var(--bg-0)}
+.pf-page .pf-chip{background-color:var(--bg-1)}
+.pf-page :is(.pf-chip,.pf-card,.ghost-btn,.pf-retry):focus-visible{
+  outline:2px solid var(--gold-bright);outline-offset:5px;
+}
+.pf-backdrop{
+  --cover-height:clamp(240px,32vw,460px);
+  position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;
+}
+.pf-backdrop::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(12,11,9,.90),rgba(12,11,9,.66) 48%,rgba(12,11,9,.28)),
+    linear-gradient(180deg,rgba(12,11,9,.6),transparent 25%,transparent 72%,var(--bg-1));
+}
+.pf-backdrop-frame{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  perspective:1100px;
+}
+.pf-backdrop-matrix{
+  display:flex;align-items:center;gap:24px;width:112vw;flex-shrink:0;
+  transform-style:preserve-3d;
+  transform:translate3d(6vw,0,-280px) rotateX(18deg) rotateY(-30deg) rotateZ(9deg);
+}
+.pf-backdrop-column{
+  flex:1;min-width:0;display:grid;gap:24px;
+  grid-template-rows:repeat(var(--rows,3),var(--cover-height));
+  transform:translate3d(0,var(--column-y,0px),0);
+}
+.pf-backdrop-cover{min-width:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .6s ease-out}
+.pf-backdrop-cover.is-loaded{opacity:.85}
+.pf-backdrop-cover img{display:block;width:100%;height:100%;object-fit:contain}
+.pf-retry{display:block;margin:16px auto 0}
+@media(max-width:760px){
+  .pf-backdrop{--cover-height:clamp(230px,68vw,420px)}
+  .pf-backdrop-matrix{width:122vw;gap:16px}
+  .pf-backdrop-column{gap:16px}
+  .pf-backdrop::after{
+    background:linear-gradient(180deg,rgba(12,11,9,.83),rgba(12,11,9,.73) 60%,var(--bg-1));
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .pf-backdrop-matrix{transform:translate3d(6vw,0,-100px) rotateY(-8deg)}
+  .pf-backdrop-column{transform:none}
+  .pf-backdrop-cover{transition:none}
+  .pf-page .pm-obj{transition:none}
+  .pf-page .pf-card:hover .pm-obj{transform:rotateY(-20deg) rotateX(5deg)}
+}

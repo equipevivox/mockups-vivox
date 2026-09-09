@@ -101,6 +101,7 @@
       const { error } = await sb.from("mockups").update({ is_public: val }).eq("id", m.id);
       if(error) throw error;
       m.is_public=val; render();
+      VX.notifyMaterialsChanged(m.id);
       VX.toast(val ? "Publicado no portfólio." : "Removido do portfólio.");
     }catch(err){
       input.checked=!val;
@@ -119,6 +120,7 @@
       await removeFolder(`${m.id}/pages`); await removeFolder(`${m.id}/photos`);
       const { error } = await sb.from("mockups").delete().eq("id", m.id);
       if(error) throw error;
+      VX.notifyMaterialsChanged(m.id);
       VX.toast("Material excluído."); load();
     }catch(err){ console.error(err); VX.toast("Erro ao excluir — "+(err.message||err), true); }
   }
@@ -206,6 +208,7 @@
       if(error) throw error;
       loader.classList.remove("show");
       VX.toast("Material enviado: "+slug);
+      VX.notifyMaterialsChanged(slug);
       load();
     }catch(err){ console.error(err); loader.classList.remove("show");
       VX.toast("Erro ao salvar — "+(err.message||err), true); }

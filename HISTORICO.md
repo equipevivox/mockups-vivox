@@ -2,6 +2,27 @@
 
 Acrescente novas entradas no início, usando a data em `America/Cuiaba`. Registre o pedido, as alterações, decisões, verificações e pendências. O diff completo de cada entrega fica no histórico Git; este arquivo explica o contexto. Consulte [CONTEXTO.md](CONTEXTO.md) para o estado atual.
 
+## 2026-09-08 — Fundo 3D com as capas publicadas
+
+**Pedido:** usar o componente de galeria 3D enviado como referência para o fundo da tela; preencher com capas reais, deixar posições excedentes vazias e incorporar novos materiais.
+
+**Alterações:**
+
+- Adicionados `portfolio-background.js` e `portfolio-background.css` ao portfólio, com perspectiva 3D, deslocamento das colunas ao rolar, composição responsiva e movimento reduzido.
+- Distribuição de uma capa por material, sem duplicação ou imagens genéricas; novas capas ocupam posições livres, e imagens com falha deixam o espaço vazio.
+- Consulta dos materiais públicos no servidor e atualização periódica enquanto a aba está visível, além de atualização ao voltar à aba ou recuperar a conexão.
+- Notificação entre abas após concluir envio, publicação ou exclusão no painel, incluindo renovação da URL de capa quando há reenvio no mesmo navegador.
+- Preservados os filtros, links e cartões do portfólio; adicionados estado acessível dos filtros, indicação de foco e botão para repetir o carregamento após falha inicial.
+- Atualizados README, contexto e instruções permanentes para manter as regras de preenchimento do fundo.
+
+**Decisões:** adaptar o exemplo React/Framer Motion a HTML/CSS/JS nativos, conforme a arquitetura existente. O fundo usa apenas materiais marcados com **Mostrar no portfólio**, acompanhando a visibilidade pública já definida pelo projeto. Os filtros de categoria não alteram o fundo.
+
+**Verificações:** sintaxe dos quatro scripts alterados e diff; consulta real dos materiais públicos; inspeção em Edge nos tamanhos 1440 × 1000 e 390 × 844; ausência de repetição e transbordamento horizontal; filtros e movimento reduzido. Em sessão isolada, verificadas lista vazia, inclusão de uma segunda capa sem deslocar a primeira, despublicação, exclusão de todas as capas, falha de imagem e preservação da lista durante falha temporária de rede. Os testes não gravaram dados no backend. O detector visual operou em modo limitado e apontou o uso de Inter, mantido por ser a identidade existente da VIVOX.
+
+**Limites e publicação:** novos materiais publicados são detectados pela consulta periódica. A substituição do mesmo arquivo sem mudar seus metadados exige recarga em uma aba já aberta em outro computador; a notificação imediata funciona entre abas do mesmo navegador. O deploy no endereço atual está pendente de acesso à conta Vercel correta: a conta conectada `equipevivox-7341` não contém o projeto. Nenhum projeto alternativo foi criado.
+
+**Verificação final:** a consulta periódica incorporou uma capa em 29 segundos, sem recarregar a página ou disparar foco. Confirmados o movimento ao rolar, as duas capas reais carregadas e os links dos materiais na versão final dos scripts.
+
 ## 2026-09-08 — Conexão ao GitHub e contexto entre computadores
 
 **Pedido:** conectar esta pasta a `equipevivox/mockups-vivox` e manter as alterações e o contexto no GitHub para permitir a retomada em outro computador.

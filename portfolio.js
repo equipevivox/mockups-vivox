@@ -1,14 +1,24 @@
 /* VIVOX · Portfólio público — grade de materiais marcados como públicos */
 (function(){
   "use strict";
-  const { $, pageUrl, esc, toast, TYPE_LABEL, listMockups } = window.VX;
+  const { $, pageUrl, esc, toast, TYPE_LABEL, listPublicMockups } = window.VX;
   const grid = $("pfGrid");
+  const background=window.VX.portfolioBackground;
+  const versions=new Map();
+  const coverSession=Date.now();
   let items = [], filter = "todos";
+  let loading=false, loaded=false, refreshTimer=0, refreshPending=false, signature="";
+
+  // Uma nova visita também busca a capa atual quando o PDF foi reenviado com o mesmo nome.
+  const coverUrl=m=>pageUrl(encodeURIComponent(m.id),0)+"?v="+encodeURIComponent(versions.get(m.id)||coverSession);
 
   document.querySelectorAll(".pf-chip").forEach(chip=>{
     chip.addEventListener("click",()=>{
-      document.querySelectorAll(".pf-chip").forEach(c=>c.classList.remove("is-on"));
+      document.querySelectorAll(".pf-chip").forEach(c=>{
+        c.classList.remove("is-on"); c.setAttribute("aria-pressed","false");
+      });
       chip.classList.add("is-on");
+      chip.setAttribute("aria-pressed","true");
       filter = chip.dataset.f;
       render();
     });
@@ -22,7 +32,7 @@
     a.innerHTML = `
       <div class="pm">
         <div class="pm-obj">
-          <div class="pm-cover" style="background-image:url('${pageUrl(m.id,0)}')"></div>
+          <div class="pm-cover"></div>
           <div class="pm-spine"></div>
           <div class="pm-edge"></div>
           <div class="pm-gloss"></div>
@@ -33,6 +43,7 @@
         <span class="pf-name">${esc(m.name||m.id).replace(/\.pdf$/i,"")}</span>
         <span class="pf-pages">${m.num_pages||0} página${(m.num_pages===1)?"":"s"}</span>
       </div>`;
+    a.querySelector(".pm-cover").style.backgroundImage=`url("${coverUrl(m)}")`;
     return a;
   }
 
@@ -46,16 +57,54 @@
     list.forEach(m=>grid.appendChild(card(m)));
   }
 
-  (async function load(){
+  async function load(){
+    if(loading){ refreshPending=true; return; }
+    loading=true;
+    clearTimeout(refreshTimer);
     try{
-      const all = await listMockups();
-      // filtro no cliente: funciona mesmo antes da coluna is_public existir
+      const all = await listPublicMockups();
       items = all.filter(m=>m.is_public===true);
-      render();
+      const nextSignature=JSON.stringify(items)+JSON.stringify(Array.from(versions));
+      if(!loaded || nextSignature!==signature){
+        const focusedId=document.activeElement.closest(".pf-card")?.getAttribute("href");
+        render();
+        if(focusedId) Array.from(grid.querySelectorAll(".pf-card")).find(a=>a.getAttribute("href")===focusedId)?.focus({preventScroll:true});
+        signature=nextSignature;
+      }
+      background?.setMaterials(items,coverUrl);
+      loaded=true;
     }catch(err){
       console.error(err);
-      grid.innerHTML = '<div class="pf-empty">Não foi possível carregar o portfólio.<br><small>'+esc(err.message||String(err))+'</small></div>';
-      toast("Erro ao carregar o portfólio.", true);
+      if(!loaded){
+        grid.innerHTML = '<div class="pf-empty">Não foi possível carregar o portfólio.<button class="ghost-btn pf-retry" type="button">Tentar novamente</button></div>';
+        grid.querySelector("button").addEventListener("click",load);
+        toast("Erro ao carregar o portfólio.", true);
+      }
+    }finally{
+      loading=false;
+      if(!document.hidden){
+        refreshTimer=setTimeout(load,refreshPending ? 0 : 30000);
+      }
+      refreshPending=false;
     }
-  })();
+  }
+
+  function refreshWhenVisible(){ if(!document.hidden) load(); }
+  document.addEventListener("visibilitychange",()=>{
+    clearTimeout(refreshTimer);
+    refreshWhenVisible();
+  });
+  window.addEventListener("focus",refreshWhenVisible);
+  window.addEventListener("online",refreshWhenVisible);
+  window.addEventListener("storage",event=>{
+    if(event.key!=="vivox_materials_changed") return;
+    try{
+      const change=JSON.parse(event.newValue);
+      if(change && typeof change.id==="string" && Number.isFinite(change.version)) versions.set(change.id,change.version);
+    }catch(e){ /* Uma notificação inválida não deve interromper a página. */ }
+    refreshWhenVisible();
+  });
+  window.addEventListener("pagehide",()=>clearTimeout(refreshTimer));
+  window.addEventListener("pageshow",event=>{ if(event.persisted) refreshWhenVisible(); });
+  load();
 })();

@@ -58,6 +58,13 @@ O worker **precisa ser same-origin** (`/pdf.worker.min.js`, versionado no repo).
 - São guardadas as **páginas renderizadas em JPEG**, nunca o PDF original.
 - Comentários sem `x`/`y` são anteriores ao recurso de pins: aparecem só na lista lateral, sem marcador na página. Trate esse caso como válido.
 
+## Ao mexer no fundo do portfólio
+
+- Use somente a primeira página dos materiais publicados, sem duplicar capas ou preencher posições vazias com imagens de exemplo. Este comportamento foi solicitado explicitamente pelo usuário.
+- Preserve as posições existentes ao adicionar materiais e deixe o espaço vazio quando a imagem falhar.
+- Mantenha o fundo decorativo (`aria-hidden`, sem interação), a preferência de movimento reduzido e a consulta periódica somente com a aba visível.
+- No painel, chame `VX.notifyMaterialsChanged(id)` após concluir envio, publicação ou exclusão; isso mantém outras abas do portfólio atualizadas. Os filtros de categoria continuam atuando somente nos cartões.
+
 ## Ao mexer em comentários
 
 O pin precisa continuar sendo **filho do elemento da página** (`.pg`) ou do painel do folder — é isso que faz ele acompanhar a virada. Não posicione pins em uma camada solta por cima do livro.

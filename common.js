@@ -52,6 +52,17 @@ window.VX = (function(){
     if(error) throw error;
     return (data||[]).map(m=>({ ...m, type:normType(m.type) }));
   }
+  async function listPublicMockups(){
+    const { data, error } = await sb.from("mockups").select("*")
+      .eq("is_public",true).order("created_at",{ascending:false});
+    if(error) throw error;
+    return (data||[]).map(m=>({ ...m, type:normType(m.type) }));
+  }
+  function notifyMaterialsChanged(id){
+    // A outra aba atualiza assim que uma publicação, exclusão ou envio termina.
+    try{ localStorage.setItem("vivox_materials_changed",JSON.stringify({id,version:Date.now()})); }
+    catch(e){ /* O portfólio também se atualiza por consulta periódica. */ }
+  }
   async function getMockup(id){
     const { data, error } = await sb.from("mockups").select("*").eq("id",id).maybeSingle();
     if(error) throw error;
@@ -102,6 +113,6 @@ window.VX = (function(){
   }
 
   return { cfg, BUCKET, sb, $, publicUrl, pageUrl, esc, toast, fmtDate, nextFrame, preloadImages,
-           makeSlug, TYPE_LABEL, normType, listMockups, getMockup,
+           makeSlug, TYPE_LABEL, normType, listMockups, listPublicMockups, notifyMaterialsChanged, getMockup,
            listComments, addComment, addReply, setResolved, deleteComment, uploadPhoto };
 })();
