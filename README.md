@@ -2,7 +2,7 @@
 
 Aplicação web da VIVOX (marketing médico) para **publicar um portfólio** de materiais e **revisar PDFs** como peça folheável, com **comentários em balão ancorados no ponto da página** (estilo Figma).
 
-**Produção:** https://mockups-vivox.vercel.app
+**Produção:** [mockups.vivoxmarketing.com.br](https://mockups.vivoxmarketing.com.br) · [alias Vercel](https://mockups-vivox.vercel.app)
 
 ## Retomar o trabalho em outro computador
 
@@ -165,11 +165,21 @@ As rotas limpas (`/portfolio`, `/m/SLUG`) **só existem no Vercel**. Localmente 
 
 ## Deploy
 
+Usar o projeto existente **mockups-vivox**, na equipe `equipevivox-7341s-projects`. O ID do projeto é `prj_gpzWlIxg6CuooSrEcKo2pTPiV6D8`; não criar outro projeto para publicar esta aplicação.
+
+O projeto está conectado a `equipevivox/mockups-vivox` no GitHub, com **`main` como branch de produção**. Envie as alterações e os registros ao GitHub e acompanhe a publicação no [painel da Vercel](https://vercel.com/equipevivox-7341s-projects/mockups-vivox).
+
+Para administrar ou publicar pela CLI em outro computador, autentique e vincule a pasta ao mesmo projeto:
+
 ```bash
-vercel deploy . --prod --yes
+npx --yes vercel login
+npx --yes vercel link --yes --scope equipevivox-7341s-projects --project prj_gpzWlIxg6CuooSrEcKo2pTPiV6D8
+npx --yes vercel deploy . --prod --yes --scope equipevivox-7341s-projects
 ```
 
-O alias `mockups-vivox.vercel.app` é atualizado automaticamente.
+Os domínios `mockups.vivoxmarketing.com.br` e `mockups-vivox.vercel.app` apontam para a publicação de produção. O projeto usa o preset **Other**, sem comandos de instalação ou build e com os arquivos na raiz. Preservar os rewrites de `vercel.json`.
+
+`.vercel/` e `.env*` são locais e ficam fora do Git. Cada computador deve autenticar sua própria sessão e executar o vínculo acima. O estado da integração automática com o GitHub está registrado em [CONTEXTO.md](CONTEXTO.md).
 
 ---
 

@@ -14,7 +14,10 @@ Manter o registro de alterações e o contexto no GitHub para retomar o trabalho
 
 - Repositório: `https://github.com/equipevivox/mockups-vivox`.
 - Branch principal: `main`. A pasta de trabalho foi conectada a `origin` e passou a acompanhar `origin/main`.
-- Base desta tarefa: commit `ab49378` — “Documenta contexto e rotina de sincronizacao entre computadores”.
+- Base desta tarefa: commit `65b66b5`, com o fundo de capas já enviado ao GitHub.
+- Vercel: projeto existente `mockups-vivox`, ID `prj_gpzWlIxg6CuooSrEcKo2pTPiV6D8`, equipe `equipevivox-7341s-projects` (`team_14ydzpU22f732BVCX1lK6WA2`). A pasta está vinculada por `.vercel/project.json`, que é local e não deve ser versionado.
+- Produção: `https://mockups.vivoxmarketing.com.br`, com alias `https://mockups-vivox.vercel.app`.
+- Integração Vercel–GitHub conectada a `equipevivox/mockups-vivox`; branch de produção `main`. Os próximos envios a essa branch devem disparar a publicação automática no mesmo projeto.
 - Aplicação estática em HTML/CSS/JS, sem etapa de build; arquivos de portfólio, administração e visualizador presentes.
 - Implementado o fundo 3D do portfólio em `portfolio-background.js` e `portfolio-background.css`, a partir do componente de referência enviado pelo usuário, adaptado para a stack estática.
 - O fundo usa uma capa por material público com páginas, mantém posições não utilizadas vazias e incorpora novos materiais sem repetir as capas anteriores. Não foram acrescentadas imagens demonstrativas.
@@ -39,12 +42,15 @@ Manter o registro de alterações e o contexto no GitHub para retomar o trabalho
 - Cenários de ausência de materiais, inclusão, despublicação, exclusão, falha de imagem, falha de rede, filtros e movimento reduzido verificados com respostas simuladas isoladas do banco real.
 - A consulta periódica incorporou um material em 29 segundos, sem recarga ou evento de foco; a rolagem alterou a perspectiva e a posição das colunas conforme esperado.
 - Nenhuma migração, alteração nas permissões do backend ou upload de teste foi realizado em produção.
-- Publicação na Vercel pendente: a integração e a CLI estão autenticadas como `equipevivox-7341`, cuja equipe não lista projetos. O projeto `mockups-vivox` não foi encontrado nessa conta. Foi solicitado ao usuário identificar a conta/equipe que hospeda o endereço atual.
+- Publicação de produção concluída via CLI no projeto existente: deployment `dpl_B3NDBRje1KHsraPq3F8LtWr7U373`, estado `READY`. Confirmados os dois domínios, respostas HTTP 200 para `/`, `/portfolio`, `/admin`, `/m/REVISTA_HOSPITAL_VISAO` e os novos assets. O navegador carregou as duas revistas reais.
+- Correção do diagnóstico anterior: a listagem da integração Vercel estava incompleta. A CLI e o painel encontraram o projeto na mesma conta `equipevivox-7341`; não foi necessário trocar de conta nem criar projeto.
+- A conexão Vercel–GitHub foi concluída após o usuário confirmar o acesso do aplicativo no GitHub. A CLI retornou `Connected`, e a API do projeto confirmou provedor `github`, organização `equipevivox`, repositório `mockups-vivox` e branch de produção `main`.
+- `.env*` foi incluído em `.gitignore`; a vinculação da CLI pode baixar variáveis locais. Tokens e arquivos `.env` não foram enviados ao Git nem ao deploy.
 - Reenvio do mesmo arquivo renova a capa por notificação entre abas do mesmo navegador e em novas visitas. Uma aba já aberta em outro computador precisa ser recarregada quando os dados do material não mudam, pois o schema atual não tem versão da capa nem `updated_at`.
 - Os pontos de autenticação e permissões descritos no README são contexto herdado, não resultado de uma auditoria atual.
 
 ## Próximos passos
 
-- Conectar a conta Vercel que contém o projeto existente e publicar a versão validada no endereço atual, sem criar um projeto substituto. Conferir `/`, `/portfolio`, `/admin` e `/m/:slug` após publicar.
+- Conferir o resultado do deploy da Vercel após envios à branch `main`.
 - Se houver trabalho futuro de segurança, conferir a autenticação e as permissões reais do backend levando em conta a visibilidade pública do repositório.
 - Em outro computador, clonar ou atualizar a branch de trabalho, abrir sua pasta no Codex e ler estes registros antes de editar.

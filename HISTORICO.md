@@ -2,6 +2,18 @@
 
 Acrescente novas entradas no início, usando a data em `America/Cuiaba`. Registre o pedido, as alterações, decisões, verificações e pendências. O diff completo de cada entrega fica no histórico Git; este arquivo explica o contexto. Consulte [CONTEXTO.md](CONTEXTO.md) para o estado atual.
 
+## 2026-09-08 — Vínculo ao projeto existente e publicação na Vercel
+
+**Pedido:** conectar à Vercel, usar o projeto já existente `mockups-vivox` e vinculá-lo ao GitHub.
+
+**Alterações:** localizada a aplicação na equipe `equipevivox-7341s-projects` pela CLI e pelo painel; vinculada a pasta ao projeto `prj_gpzWlIxg6CuooSrEcKo2pTPiV6D8`; publicada a versão com o fundo de capas em produção. Acrescentado `.env*` ao `.gitignore` e documentados o domínio principal, a equipe, o ID e os comandos de vinculação em outro computador.
+
+**Correção de diagnóstico:** a conclusão da tarefa anterior de que essa conta não continha o projeto estava incorreta. A listagem da integração retornou vazia, mas a consulta direta da CLI e o painel localizaram o projeto. Nenhum projeto substituto foi criado.
+
+**Verificações:** deployment `dpl_B3NDBRje1KHsraPq3F8LtWr7U373` em estado `READY`, associado a `mockups.vivoxmarketing.com.br` e `mockups-vivox.vercel.app`. Confirmadas respostas HTTP 200 nas rotas do portfólio, painel e revista, além dos novos arquivos CSS/JS. As duas revistas reais carregaram no navegador. A simulação de upload confirmou a exclusão de `.env.local`, `.git` e `.vercel`.
+
+**Integração GitHub:** após a confirmação de acesso do usuário no GitHub, a conexão por `vercel git connect` retornou `Connected`. A API do projeto confirmou `equipevivox/mockups-vivox` como origem GitHub e `main` como branch de produção. A pasta local continua conectada a `origin/main` e usa o Git autenticado para enviar código e contexto.
+
 ## 2026-09-08 — Fundo 3D com as capas publicadas
 
 **Pedido:** usar o componente de galeria 3D enviado como referência para o fundo da tela; preencher com capas reais, deixar posições excedentes vazias e incorporar novos materiais.
@@ -19,7 +31,7 @@ Acrescente novas entradas no início, usando a data em `America/Cuiaba`. Registr
 
 **Verificações:** sintaxe dos quatro scripts alterados e diff; consulta real dos materiais públicos; inspeção em Edge nos tamanhos 1440 × 1000 e 390 × 844; ausência de repetição e transbordamento horizontal; filtros e movimento reduzido. Em sessão isolada, verificadas lista vazia, inclusão de uma segunda capa sem deslocar a primeira, despublicação, exclusão de todas as capas, falha de imagem e preservação da lista durante falha temporária de rede. Os testes não gravaram dados no backend. O detector visual operou em modo limitado e apontou o uso de Inter, mantido por ser a identidade existente da VIVOX.
 
-**Limites e publicação:** novos materiais publicados são detectados pela consulta periódica. A substituição do mesmo arquivo sem mudar seus metadados exige recarga em uma aba já aberta em outro computador; a notificação imediata funciona entre abas do mesmo navegador. O deploy no endereço atual está pendente de acesso à conta Vercel correta: a conta conectada `equipevivox-7341` não contém o projeto. Nenhum projeto alternativo foi criado.
+**Limites e publicação:** novos materiais publicados são detectados pela consulta periódica. A substituição do mesmo arquivo sem mudar seus metadados exige recarga em uma aba já aberta em outro computador; a notificação imediata funciona entre abas do mesmo navegador. O deploy ficou pendente após a listagem da integração não encontrar o projeto; essa conclusão foi corrigida na tarefa seguinte, registrada acima. Nenhum projeto alternativo foi criado.
 
 **Verificação final:** a consulta periódica incorporou uma capa em 29 segundos, sem recarregar a página ou disparar foco. Confirmados o movimento ao rolar, as duas capas reais carregadas e os links dos materiais na versão final dos scripts.
 
