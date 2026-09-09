@@ -20,6 +20,7 @@ Manter o registro de alterações e o contexto no GitHub para retomar o trabalho
 - Integração Vercel–GitHub conectada a `equipevivox/mockups-vivox`; branch de produção `main`. Os próximos envios a essa branch devem disparar a publicação automática no mesmo projeto.
 - Aplicação estática em HTML/CSS/JS, sem etapa de build; arquivos de portfólio, administração e visualizador presentes.
 - Textos de abertura atualizados conforme solicitação do usuário: eyebrow **MATERIAIS VIVOX**, título **Materiais criados para sua marca** e descrição que orienta explorar os materiais, folhear páginas e comentar. Filtros mantidos como **Todos**, **Revistas**, **Folders** e **Mockups**, pois não foram enviados novos rótulos.
+- A atualização dos textos foi publicada automaticamente a partir de `c1580a2`, com deployment `dpl_89UXNt3ck5xcHrEU3nXFdGSbwxRF` em estado `READY`. As rotas `/` e `/portfolio` em `mockups-vivox.vercel.app` responderam 200 com HTML idêntico ao arquivo local.
 - Implementado o fundo 3D do portfólio em `portfolio-background.js` e `portfolio-background.css`, a partir do componente de referência enviado pelo usuário, adaptado para a stack estática.
 - O fundo usa uma capa por material público com páginas, mantém posições não utilizadas vazias e incorpora novos materiais sem repetir as capas anteriores. Não foram acrescentadas imagens demonstrativas.
 - O portfólio consulta apenas materiais públicos a cada 30 segundos com a aba visível e recebe notificações do painel após envios, publicações ou exclusões. Há duas revistas publicadas na consulta realizada nesta tarefa.
@@ -37,6 +38,7 @@ Manter o registro de alterações e o contexto no GitHub para retomar o trabalho
 
 ## Validação e limites
 
+- Na conferência desta atualização, `mockups.vivoxmarketing.com.br` apresentou falha de resolução DNS, também confirmada pelo resolvedor público `1.1.1.1` como nome inexistente. O alias `mockups-vivox.vercel.app` está acessível com os textos novos. Não houve alteração em DNS, domínios ou configuração de deploy nesta tarefa.
 - Acesso ao repositório, histórico e rastreamento de `main` conferidos.
 - A integração GitHub recusou escrita na tarefa anterior. Usar o Git local autenticado para publicar; outro computador precisa ter sua própria autenticação para enviar commits.
 - Sintaxe JavaScript e diff conferidos. A visualização local foi inspecionada no Edge em desktop (1440 × 1000) e celular (390 × 844), com as duas capas reais, sem transbordamento horizontal ou erros de execução.
@@ -53,6 +55,7 @@ Manter o registro de alterações e o contexto no GitHub para retomar o trabalho
 
 ## Próximos passos
 
+- Conferir o registro DNS de `mockups.vivoxmarketing.com.br` no provedor do domínio; o alias de produção da Vercel continua disponível.
 - Conferir o resultado do deploy da Vercel após envios à branch `main`.
 - Se houver trabalho futuro de segurança, conferir a autenticação e as permissões reais do backend levando em conta a visibilidade pública do repositório.
 - Em outro computador, clonar ou atualizar a branch de trabalho, abrir sua pasta no Codex e ler estes registros antes de editar.

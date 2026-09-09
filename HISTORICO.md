@@ -8,7 +8,9 @@ Acrescente novas entradas no início, usando a data em `America/Cuiaba`. Registr
 
 **Alterações:** `index.html` passa a exibir **MATERIAIS VIVOX**, **Materiais criados para sua marca** e a descrição “Explore os materiais desenvolvidos pela VIVOX. Abra cada projeto para visualizar os detalhes, folhear as páginas e deixar seus comentários.”, com quebra de linha entre as frases. Preservados o destaque dourado do título e os filtros **Todos**, **Revistas**, **Folders** e **Mockups**; o pedido não trouxe novos nomes para os filtros.
 
-**Verificação:** revisão do diff e dos textos no HTML. Alteração restrita ao conteúdo de abertura, sem modificar scripts, rotas ou comportamento das capas. A publicação segue o fluxo automático da branch `main`.
+**Verificação:** revisão do diff e dos textos no HTML. O commit `c1580a2` gerou automaticamente o deployment `dpl_89UXNt3ck5xcHrEU3nXFdGSbwxRF`, em estado `READY`. As rotas `/` e `/portfolio` do alias `mockups-vivox.vercel.app` responderam 200 e entregaram HTML idêntico ao arquivo local. Alteração restrita ao conteúdo de abertura, sem modificar scripts, rotas ou comportamento das capas.
+
+**Limitação observada:** o domínio personalizado `mockups.vivoxmarketing.com.br` falhou na resolução DNS durante a verificação, inclusive com resposta de nome inexistente pelo resolvedor `1.1.1.1`. O alias da Vercel funciona. Nenhuma configuração de domínio ou DNS foi alterada nesta tarefa.
 
 ## 2026-09-08 — Vínculo ao projeto existente e publicação na Vercel
 
