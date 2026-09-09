@@ -3,7 +3,7 @@
 .pf-page .pf-wrap{position:relative;z-index:1}
 .pf-page .pf-head p,.pf-page .pf-meta{text-shadow:0 2px 12px var(--bg-0)}
 .pf-page .pf-chip{background-color:var(--bg-1)}
-.pf-page :is(.pf-chip,.pf-card,.ghost-btn,.pf-retry):focus-visible{
+.pf-page :is(.brand,.pf-chip,.pf-card,.ghost-btn,.pf-retry):focus-visible{
   outline:2px solid var(--gold-bright);outline-offset:5px;
 }
 .pf-backdrop{

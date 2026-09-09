@@ -37,6 +37,8 @@ Ao concluir cada tarefa relevante, o agente deve atualizar esses arquivos, criar
 
 As rotas limpas vêm de `vercel.json` (`rewrites`).
 
+O topo público usa a logo **VIVOX Grid**, centralizada, sem botão de administração. O painel é acessado diretamente por `/admin`.
+
 > ⚠️ **Não usar `cleanUrls: true` no `vercel.json`** — ele anula os `rewrites` e `/portfolio` e `/m/:slug` passam a dar 404.
 > ⚠️ Em `viewer.html` os assets **precisam de caminho absoluto** (`/common.js`, `/lib/...`). Com caminho relativo, em `/m/SLUG` eles resolvem para `/m/common.js` → 404 (o erro aparece como `Unexpected token '<'`).
 
@@ -104,6 +106,7 @@ portfolio-background.js     distribuição das capas e movimento do fundo
 portfolio-background.css    perspectiva, sobreposição e responsividade do fundo
 style.css                    base e identidade
 ui.css                       portfólio, balões de comentário e admin
+assets/vivox-grid.svg         logo original enviada pelo usuário, usada no topo público
 lib/                         jquery 1.7 + turn.min.js
 pdf.worker.min.js            worker do PDF.js (precisa ser same-origin)
 vercel.json                  rewrites das rotas

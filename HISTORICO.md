@@ -2,6 +2,14 @@
 
 Acrescente novas entradas no início, usando a data em `America/Cuiaba`. Registre o pedido, as alterações, decisões, verificações e pendências. O diff completo de cada entrega fica no histórico Git; este arquivo explica o contexto. Consulte [CONTEXTO.md](CONTEXTO.md) para o estado atual.
 
+## 2026-09-08 — Logo VIVOX Grid centralizada e remoção do botão de admin
+
+**Pedido:** retirar o botão de admin do canto e deixar a logo no centro do topo, utilizando o arquivo `VIVOX Grid.svg` enviado pelo usuário.
+
+**Alterações:** adicionada a logo original em `assets/vivox-grid.svg`; substituída a marca anterior no topo público; centralização e escala responsiva de 230px a 307px; removido o atalho de administração. Preservado o link da logo para `/portfolio`, com texto alternativo e foco visível. O painel permanece acessível diretamente por `/admin`. Renovadas as URLs dos estilos alterados.
+
+**Verificações:** diff e inspeção no Edge em 1440 × 1000 e 390 × 844. Confirmados o carregamento do SVG, a centralização, as larguras de 307px e 230px, a ausência do botão de admin e nenhum transbordamento horizontal ou erro de execução. O SVG fornecido foi mantido sem alterações no desenho.
+
 ## 2026-09-08 — Fundo preto absoluto, revistas maiores e remoção do rodapé
 
 **Pedido:** remover o rodapé “ferramenta interna de revisão”, aplicar preto absoluto ao fundo e ampliar a visualização dos mockups das revistas, usando a captura enviada como referência.

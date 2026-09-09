@@ -14,11 +14,12 @@ Manter o registro de alterações e o contexto no GitHub para retomar o trabalho
 
 - Repositório: `https://github.com/equipevivox/mockups-vivox`.
 - Branch principal: `main`. A pasta de trabalho foi conectada a `origin` e passou a acompanhar `origin/main`.
-- Base desta tarefa: commit `ee0e6e9`, com o portfólio centralizado e o domínio grid confirmado.
+- Base desta tarefa: commit `54373ed`, com fundo preto, revistas ampliadas e rodapé removido.
 - Vercel: projeto existente `mockups-vivox`, ID `prj_gpzWlIxg6CuooSrEcKo2pTPiV6D8`, equipe `equipevivox-7341s-projects` (`team_14ydzpU22f732BVCX1lK6WA2`). A pasta está vinculada por `.vercel/project.json`, que é local e não deve ser versionado.
 - Produção: `https://grid.vivoxmarketing.com.br`, com alias `https://mockups-vivox.vercel.app`. O usuário mudou o domínio personalizado; o projeto Vercel continua **mockups-vivox**.
 - Integração Vercel–GitHub conectada a `equipevivox/mockups-vivox`; branch de produção `main`. Os próximos envios a essa branch devem disparar a publicação automática no mesmo projeto.
 - Aplicação estática em HTML/CSS/JS, sem etapa de build; arquivos de portfólio, administração e visualizador presentes.
+- Topo público com a logo original **VIVOX Grid** (`assets/vivox-grid.svg`) centralizada e responsiva, substituindo o símbolo e o texto anteriores. Botão de admin removido; o painel continua acessível diretamente em `/admin`. A logo mantém o link para `/portfolio` e tem texto alternativo e foco visível.
 - Textos de abertura atualizados conforme solicitação do usuário: eyebrow **MATERIAIS VIVOX**, título **Materiais criados para sua marca** e descrição que orienta explorar os materiais, folhear páginas e comentar. Filtros mantidos como **Todos**, **Revistas**, **Folders** e **Mockups**, pois não foram enviados novos rótulos.
 - Cabeçalho, filtros e metadados centralizados. Capas ampliadas para até 420px e área de galeria de até 1880px; linhas de quatro em telas a partir de 1680px, três a partir de 900px, duas a partir de 600px e uma em telas menores. Linhas com poucos materiais ficam centralizadas sem cartões de preenchimento.
 - Rodapé “VIVOX · ferramenta interna de revisão de materiais” removido. Base do portfólio em preto absoluto `#000000`, com sobreposições pretas e capas decorativas preservadas. As referências dos dois estilos alterados em `index.html` têm versão na URL para evitar a reutilização de CSS anterior pelo navegador.
@@ -41,6 +42,7 @@ Manter o registro de alterações e o contexto no GitHub para retomar o trabalho
 
 ## Validação e limites
 
+- Logo verificada no Edge em 1440 × 1000 e 390 × 844: SVG carregado com 307px e 230px de largura, respectivamente, centralização confirmada, botão de admin ausente e nenhuma rolagem horizontal ou erro de execução. O arquivo SVG original foi copiado sem alterar o desenho.
 - O usuário esclareceu que o endereço atual é `grid.vivoxmarketing.com.br`. A API Vercel confirmou esse domínio no mesmo projeto, com `verified: true`, e o site respondeu HTTP 200. A falha anterior referia-se ao domínio antigo; não há pendência de recuperar esse endereço.
 - Última inspeção visual no Edge em 2508 × 1361, 1440 × 1000 e 390 × 844: duas capas reais carregadas, cabeçalho centralizado, rodapé ausente, fundo computado `rgb(0, 0, 0)` sem gradiente na base e nenhum transbordamento horizontal ou erro de execução. As capas renderizaram com aproximadamente 391/398/323px de largura, respectivamente. O detector visual operou em modo limitado e apontou somente a fonte Inter, preservada como parte da identidade existente.
 - Acesso ao repositório, histórico e rastreamento de `main` conferidos.
