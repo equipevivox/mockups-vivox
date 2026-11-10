@@ -9,6 +9,7 @@
   const state = { id:null, name:"", type:"revista", pages:[], aspect:60/49, total:0,
                   comments:[], commentMode:false, folderOpen:false, ry:-24, rx:6,
                   showDone:false, drawerFilter:"abertos",
+                  slidePage:1, slideAnimation:null,
                   hideMarks: localStorage.getItem("vivox_hide_marks")==="1" };
 
   // ---- identidade: pede o nome uma vez e reaproveita nas próximas páginas ----
@@ -42,9 +43,10 @@
 
   const isMobile = ()=>window.matchMedia("(max-width:760px)").matches;
   const isFolder = ()=>state.type==="folder";
-  const isSingle = ()=>isMobile() || state.type==="mockup";
+  const isPresentation = ()=>state.type==="apresentacao";
+  const isSingle = ()=>isMobile() || state.type==="mockup" || isPresentation();
   const $fb = ()=>window.jQuery(flipEl);
-  const curPage = ()=>{ try{ return $fb().turn("page")||1; }catch(e){ return 1; } };
+  const curPage = ()=>{ if(isPresentation()) return state.slidePage; try{ return $fb().turn("page")||1; }catch(e){ return 1; } };
 
   function getSlug(){
     const m = location.pathname.match(/^\/m\/([^\/]+)\/?$/);
@@ -60,7 +62,9 @@
       const mk = await VX.getMockup(slug);
       if(!mk){ fail("Este material não existe."); return; }
       state.id=slug; state.name=mk.name||slug; state.type=mk.type;
-      state.aspect = mk.aspect || (60/49);
+      state.aspect = mk.aspect || (isPresentation()?0.5625:60/49);
+      $("viewer").classList.toggle("viewer--apresentacao",isPresentation());
+      $("fsBtn").hidden=!(document.fullscreenEnabled && $("viewer").requestFullscreen);
       const n = mk.num_pages||0;
       if(!n){ fail("Material sem páginas."); return; }
       state.pages = Array.from({length:n},(_,i)=>VX.pageUrl(slug,i,mk.cover_version));
@@ -91,17 +95,18 @@
   // ================= flipbook (revista / mockup) =================
   function computeDims(){
     const single=isSingle();
-    const areaW=Math.max(280, flipArea.clientWidth - (isMobile()?16:24));
-    const areaH=Math.max(320, flipArea.clientHeight - 14);
+    const areaW=Math.max(isPresentation()?1:280, flipArea.clientWidth - (isMobile()?16:24));
+    const areaH=Math.max(isPresentation()?1:320, flipArea.clientHeight - 14);
     let pageW = single ? Math.min(areaW*0.96,(areaH*0.98)/state.aspect)
                        : Math.min((areaW*0.94)/2,(areaH*0.98)/state.aspect);
     return { single, pageW:Math.round(pageW), pageH:Math.round(pageW*state.aspect) };
   }
 
-  async function buildFlipbook(){
+  async function buildFlipbook(initialPage=1){
     const J=window.jQuery;
-    if(!J||!J.fn||!J.fn.turn){ VX.toast("Biblioteca de animação não carregou.",true); return; }
-    try{ $fb().turn("destroy"); }catch(e){}
+    if(!isPresentation() && (!J||!J.fn||!J.fn.turn)){ VX.toast("Biblioteca de animação não carregou.",true); return; }
+    if(!isPresentation()){ try{ $fb().turn("destroy"); }catch(e){} }
+    flipEl.classList.toggle("slide-deck",isPresentation());
     flipEl.innerHTML=""; flipEl.removeAttribute("style");
     folderEl.hidden=true; flipEl.hidden=false;
     $("pageControls").hidden=false; $("folderControls").hidden=true;
@@ -121,11 +126,19 @@
       add.addEventListener("click",(e)=>{ e.stopPropagation(); e.preventDefault();
         if(!state.commentMode) setCommentMode(true); });
       pg.appendChild(img); pg.appendChild(pins); pg.appendChild(add);
-      pg.addEventListener("click",(e)=>onSurfaceClick(e,pg,i));
+      wireAreaSelection(pg,i);
+      pg.addEventListener("click",(e)=>{ if(Date.now()<(pg._suppressClick||0)) return; onSurfaceClick(e,pg,i); });
       flipEl.appendChild(pg);
     });
 
     await VX.preloadImages(state.pages);
+
+    if(isPresentation()){
+      resizeSlides();
+      $("totalPages").textContent=state.total; $("pageInput").max=state.total;
+      goTo(initialPage,false);
+      return;
+    }
 
     const opts={ width:d.single?d.pageW:d.pageW*2, height:d.pageH,
       display:d.single?"single":"double", autoCenter:true, gradients:true, acceleration:true,
@@ -139,7 +152,9 @@
       if(!ready) await new Promise(r=>setTimeout(r,90));
     }
     $("totalPages").textContent=state.total; $("pageInput").max=state.total;
-    syncPage(1);
+    if(initialPage>1) $fb().turn("page",initialPage);
+    if(state.commentMode) $fb().turn("disable",true);
+    syncPage(initialPage);
   }
 
   function syncPage(p){
@@ -230,6 +245,11 @@
     renderPins(); renderDrawer();
   }
 
+  let activeThread=null;
+  function highlightArea(id){
+    document.querySelectorAll(".comment-region").forEach(el=>el.classList.toggle("is-active",el.dataset.tid===id));
+  }
+
   // pins do flipbook: dentro da página; pins do folder: dentro do painel correspondente
   function renderPins(){
     document.querySelectorAll(".pins").forEach(p=>p.innerHTML="");
@@ -244,7 +264,20 @@
         if(host) host.appendChild(pinEl(t,(c.x*3-p),c.y));
       }else{
         const host=document.querySelector(`.pg[data-page="${c.page_index}"] .pins`);
-        if(host) host.appendChild(pinEl(t,c.x,c.y));
+        if(host){
+          const pin=pinEl(t,c.x,c.y);
+          if(c.w>0 && c.h>0){
+            const region=document.createElement("div"); region.className="comment-region"; region.dataset.tid=c.id;
+            const rect=document.createElement("div"); rect.className="comment-area";
+            Object.assign(rect.style,{left:c.x*100+"%",top:c.y*100+"%",width:c.w*100+"%",height:c.h*100+"%"});
+            region.append(rect,pin); host.appendChild(region);
+            pin.addEventListener("mouseenter",()=>region.classList.add("is-hover"));
+            pin.addEventListener("mouseleave",()=>region.classList.remove("is-hover"));
+            pin.addEventListener("focus",()=>region.classList.add("is-hover"));
+            pin.addEventListener("blur",()=>region.classList.remove("is-hover"));
+            region.classList.toggle("is-active",activeThread===c.id);
+          }else host.appendChild(pin);
+        }
       }
     });
   }
@@ -273,7 +306,7 @@
     $("cmtHint").hidden=!on;
     if(on && isFolder()){ setFolderOpen(true); state.ry=0; state.rx=0; applyFolderRotation(); }
     // trava o turn.js enquanto comenta, senão o clique vira a página
-    if(!isFolder()){ try{ $fb().turn("disable", on); }catch(e){} }
+    if(!isFolder() && !isPresentation()){ try{ if(on) $fb().turn("stop"); $fb().turn("disable", on); }catch(e){} }
     if(!on) closeBubble();
   }
   $("cmtTool").addEventListener("click",()=>setCommentMode(!state.commentMode));
@@ -291,13 +324,84 @@
   $("hideBtn").addEventListener("click",()=>setHideMarks(!state.hideMarks));
   setHideMarks(state.hideMarks);
   document.addEventListener("keydown",(e)=>{
+    if(e.key==="Escape"){ if(state.commentMode) setCommentMode(false); closeBubble(); closeDrawer(); return; }
     if(e.target.tagName==="TEXTAREA"||e.target.tagName==="INPUT") return;
-    if(e.key==="Escape"){ if(state.commentMode) setCommentMode(false); closeBubble(); closeDrawer(); }
-    else if(e.key==="c"||e.key==="C"){ setCommentMode(!state.commentMode); }  // atalho do Figma
+    if(e.key==="c"||e.key==="C"){ setCommentMode(!state.commentMode); }  // atalho do Figma
     else if(!isFolder()){
       if(e.key==="ArrowRight") fNext(); else if(e.key==="ArrowLeft") fPrev();
     }
   });
+
+  function wireAreaSelection(pg,pageIndex){
+    let drag=null;
+    const clamp=v=>Math.max(0,Math.min(1,v));
+    const point=e=>{ const r=drag?.bounds||pg.getBoundingClientRect();return {x:clamp((e.clientX-r.left)/r.width),y:clamp((e.clientY-r.top)/r.height)}; };
+    const clear=()=>{if(drag){drag.rect.remove();drag=null;}};
+    pg.addEventListener("pointerdown",e=>{
+      if(!state.commentMode || e.button!==0 || !e.isPrimary || e.target.closest("button")) return;
+      e.preventDefault();e.stopPropagation();closeBubble();
+      const rect=document.createElement("div");rect.className="comment-area area-draft";pg.appendChild(rect);
+      drag={id:e.pointerId,start:point(e),bounds:pg.getBoundingClientRect(),cx:e.clientX,cy:e.clientY,rect};
+      pg.setPointerCapture(e.pointerId);
+    });
+    pg.addEventListener("pointermove",e=>{
+      if(!drag || drag.id!==e.pointerId) return;
+      if(!state.commentMode){clear();return;}
+      e.preventDefault();const p=point(e),a=drag.start;
+      Object.assign(drag.rect.style,{left:Math.min(a.x,p.x)*100+"%",top:Math.min(a.y,p.y)*100+"%",width:Math.abs(a.x-p.x)*100+"%",height:Math.abs(a.y-p.y)*100+"%"});
+    });
+    pg.addEventListener("pointerup",e=>{
+      if(!drag || drag.id!==e.pointerId) return;
+      e.preventDefault();e.stopPropagation();pg._suppressClick=Date.now()+500;
+      const d=drag,p=point(e);drag=null;
+      if(!state.commentMode){d.rect.remove();return;}
+      const w=Math.abs(p.x-d.start.x),h=Math.abs(p.y-d.start.y);
+      const area=Math.hypot(e.clientX-d.cx,e.clientY-d.cy)>=6 && w>0 && h>0;
+      const x=area?Math.min(p.x,d.start.x):d.start.x,y=area?Math.min(p.y,d.start.y):d.start.y;
+      if(!area)d.rect.remove();
+      const r=pg.getBoundingClientRect();openComposer(pageIndex,x,y,r.left+x*r.width,r.top+y*r.height,area?{w,h}:null);
+    });
+    pg.addEventListener("pointercancel",clear);pg.addEventListener("lostpointercapture",clear);
+    pg.addEventListener("dragstart",e=>{if(state.commentMode)e.preventDefault();});
+  }
+
+  // Evita que um arquivo solto fora do compositor navegue para outra página.
+  document.addEventListener("dragover",e=>{if(!bubble.hidden && Array.from(e.dataTransfer?.types||[]).includes("Files"))e.preventDefault();});
+  document.addEventListener("drop",e=>{if(!bubble.hidden && !bubble.contains(e.target) && Array.from(e.dataTransfer?.types||[]).includes("Files")){e.preventDefault();VX.toast("Solte as imagens dentro do comentário para anexar.");}});
+
+  function wireAttachments(box){
+    const files=[];
+    const fileIn=document.createElement("input");fileIn.type="file";fileIn.accept="image/*";fileIn.multiple=true;fileIn.hidden=true;box.appendChild(fileIn);
+    const hint=document.createElement("small");hint.className="attachment-hint";hint.textContent="Cole uma imagem (Ctrl+V) ou arraste arquivos aqui.";box.appendChild(hint);
+    function addFiles(incoming){
+      for(const file of incoming){
+        if(!file.type.startsWith("image/"))continue;
+        if(files.length>=5){VX.toast("Máximo de 5 imagens por comentário.");break;}
+        files.push(file);const th=document.createElement("div");th.className="th";
+        const img=document.createElement("img"),url=URL.createObjectURL(file);img.src=url;img.alt=file.name;
+        img.onload=img.onerror=()=>URL.revokeObjectURL(url);
+        const remove=document.createElement("button");remove.type="button";remove.textContent="×";remove.setAttribute("aria-label","Remover imagem");
+        remove.addEventListener("click",()=>{files.splice(files.indexOf(file),1);th.remove();});
+        th.append(img,remove);box.querySelector(".b-thumbs").appendChild(th);
+      }
+      placeBubble((parseFloat(bubble.style.left)||12)-14,(parseFloat(bubble.style.top)||12)+10);
+    }
+    box.querySelector(".b-attach").addEventListener("click",()=>fileIn.click());
+    fileIn.addEventListener("change",()=>{addFiles(fileIn.files);fileIn.value="";});
+    box.addEventListener("paste",e=>{
+      const images=[...(e.clipboardData?.files||[])].filter(f=>f.type.startsWith("image/"));
+      if(images.length){
+        e.preventDefault();
+        const text=e.clipboardData.getData("text/plain");
+        if(text && e.target.tagName==="TEXTAREA"){e.target.setRangeText(text,e.target.selectionStart,e.target.selectionEnd,"end");e.target.dispatchEvent(new Event("input",{bubbles:true}));}
+        addFiles(images);
+      }
+    });
+    box.addEventListener("dragover",e=>{e.preventDefault();box.classList.add("is-dragover");});
+    box.addEventListener("dragleave",e=>{if(!box.contains(e.relatedTarget))box.classList.remove("is-dragover");});
+    box.addEventListener("drop",e=>{e.preventDefault();e.stopPropagation();box.classList.remove("is-dragover");addFiles(e.dataTransfer.files);});
+    return {files};
+  }
 
   function onSurfaceClick(e,pg,pageIndex){
     if(!state.commentMode) return;
@@ -329,13 +433,13 @@
     if(t+h>window.innerHeight-12) t=window.innerHeight-h-12;
     bubble.style.left=Math.max(12,l)+"px"; bubble.style.top=Math.max(12,t)+"px";
   }
-  function closeBubble(){ bubble.hidden=true; bubble.innerHTML=""; }
+  function closeBubble(){ bubble.hidden=true; bubble.innerHTML=""; activeThread=null; highlightArea(null); document.querySelectorAll(".area-draft").forEach(el=>el.remove()); }
   document.addEventListener("mousedown",(e)=>{
     if(bubble.hidden) return;
     if(!bubble.contains(e.target) && !e.target.closest(".pin")) closeBubble();
   });
 
-  function openComposer(pageIndex,x,y,cx,cy){
+  function openComposer(pageIndex,x,y,cx,cy,area=null){
     bubble.innerHTML="";
     const box=document.createElement("div"); box.className="bubble-box";
     box.innerHTML=`
@@ -344,62 +448,70 @@
       <textarea class="b-text" placeholder="Escreva a correção ou observação…"></textarea>
       <div class="b-thumbs"></div>
       <div class="b-row">
-        <button type="button" class="attach-btn b-attach">Anexar foto</button>
+        <button type="button" class="attach-btn b-attach">Anexar imagens (até 5)</button>
         <button type="button" class="send-btn b-send">Enviar</button>
       </div>`;
     bubble.appendChild(box);
     wireIdentity(box);
     placeBubble(cx,cy);
 
-    const files=[];
-    const fileIn=document.createElement("input"); fileIn.type="file"; fileIn.accept="image/*"; fileIn.multiple=true; fileIn.hidden=true;
-    box.appendChild(fileIn);
-    box.querySelector(".b-attach").addEventListener("click",()=>fileIn.click());
-    fileIn.addEventListener("change",()=>{
-      Array.from(fileIn.files).forEach(f=>{ if(!f.type.startsWith("image/"))return;
-        if(files.length>=5){ VX.toast("Máximo de 5 imagens por comentário."); return; }
-        files.push(f);
-        const th=document.createElement("div"); th.className="th";
-        const im=document.createElement("img"); im.src=URL.createObjectURL(f);
-        const rm=document.createElement("button"); rm.type="button"; rm.textContent="✕";
-        rm.addEventListener("click",()=>{ const i=files.indexOf(f); if(i>=0)files.splice(i,1); th.remove(); });
-        th.appendChild(im); th.appendChild(rm); box.querySelector(".b-thumbs").appendChild(th); });
-      fileIn.value="";
-    });
+    const attachments=wireAttachments(box);
     box.querySelector(".bubble-x").addEventListener("click",closeBubble);
     (box.querySelector(".b-author[type='text']")||box.querySelector(".b-text")).focus();
 
     box.querySelector(".b-send").addEventListener("click",async()=>{
       const body=box.querySelector(".b-text").value.trim();
-      if(!body && !files.length){ VX.toast("Escreva algo ou anexe uma foto."); return; }
+      if(!body && !attachments.files.length){ VX.toast("Escreva algo ou anexe uma foto."); return; }
       const who=requireAuthor(box); if(!who) return;
       const btn=box.querySelector(".b-send"); btn.disabled=true; btn.textContent="Enviando…";
+      const urls=[];let saved=false;
       try{
-        const urls=[];
-        for(const f of files) urls.push(await VX.uploadPhoto(state.id,f));
+        for(const f of attachments.files) urls.push(await VX.uploadPhoto(state.id,f));
         const res = await VX.addComment({ mockup_id:state.id, page_index:pageIndex, x, y,
-          author:who, body, photos:urls });
+          author:who, body, photos:urls, ...(area?{w:area.w,h:area.h}:{}) });
+        saved=true;
         closeBubble(); setCommentMode(false);
         await loadComments();
         VX.toast(res.positioned ? "Comentário adicionado."
           : "Comentário salvo (sem marcador — falta rodar a migração x/y no Supabase).");
-      }catch(err){ console.error(err); btn.disabled=false; btn.textContent="Enviar";
-        VX.toast("Erro ao enviar — "+(err.message||err), true); }
+      }catch(err){ console.error(err);
+        if(!saved && urls.length)await VX.removePhotos(urls).catch(cleanup=>console.warn(cleanup));
+        btn.disabled=false; btn.textContent="Enviar";
+        const unavailable=area && (missingColumn(err,"w")||missingColumn(err,"h"));
+        VX.toast(unavailable?"Comentários por área ainda não estão disponíveis. Aguarde a atualização do sistema e tente novamente.":"Erro ao enviar — "+(err.message||err), true); }
     });
+  }
+
+  // URLs externas e valores inesperados do banco nunca viram imagens ou links.
+  function safePhotoUrl(value){
+    if(typeof value!=="string")return null;
+    try{
+      const url=new URL(value),base=new URL(VX.publicUrl(""));
+      if(!["http:","https:"].includes(url.protocol) || url.origin!==base.origin || !url.pathname.startsWith(base.pathname) || url.username || url.password)return null;
+      return url.href;
+    }catch(e){return null;}
+  }
+  function photoHtml(photos){
+    return (Array.isArray(photos)?photos:[]).map(safePhotoUrl).filter(Boolean).map(url=>`<img src="${VX.esc(url)}" alt="Imagem anexada" loading="lazy">`).join("");
+  }
+  function missingColumn(err,column){
+    return ["PGRST204","42703"].includes(err?.code) && new RegExp("\\b"+column+"\\b","i").test(String(err.message||""));
   }
 
   function openThread(t, anchorEl){
     const c=t.root;
+    activeThread=c.id; highlightArea(c.id);
     const r=anchorEl.getBoundingClientRect();
     bubble.innerHTML="";
     const box=document.createElement("div"); box.className="bubble-box bubble-thread";
-    const photos=(Array.isArray(c.photos)?c.photos:[]).map(u=>`<img src="${u}" loading="lazy">`).join("");
+    const photos=photoHtml(c.photos);
     const replies=t.replies.map(rp=>`
       <div class="th-reply">
         <span class="th-av th-av--sm">${VX.esc(initial(rp.author))}</span>
         <div class="th-rbody">
           <div class="th-who">${VX.esc(rp.author||"Anônimo")}<time>${VX.fmtDate(rp.created_at)}</time></div>
           <div class="b-body">${VX.esc(rp.body||"")}</div>
+          <div class="b-photos">${photoHtml(rp.photos)}</div>
         </div>
       </div>`).join("");
     box.innerHTML=`
@@ -416,6 +528,8 @@
       <div class="th-reply-box">
         ${identityHtml()}
         <textarea class="th-text" placeholder="Responder…"></textarea>
+        <div class="b-thumbs"></div>
+        <button type="button" class="attach-btn b-attach">Anexar imagens (até 5)</button>
         <div class="b-row">
           <button type="button" class="b-del">Excluir</button>
           <button type="button" class="send-btn th-send">Responder</button>
@@ -423,9 +537,10 @@
       </div>`;
     bubble.appendChild(box);
     wireIdentity(box);
+    const attachments=wireAttachments(box.querySelector(".th-reply-box"));
     placeBubble(r.right, r.top);
     box.querySelector(".bubble-x").addEventListener("click",closeBubble);
-    box.querySelectorAll(".b-photos img").forEach(im=>im.addEventListener("click",()=>window.open(im.src,"_blank")));
+    box.querySelectorAll(".b-photos img").forEach(im=>im.addEventListener("click",()=>{const url=safePhotoUrl(im.src);if(url)window.open(url,"_blank","noopener,noreferrer");}));
 
     // marcar como entregue / reabrir
     box.querySelector(".th-done").addEventListener("click",async()=>{
@@ -441,17 +556,22 @@
     // responder
     box.querySelector(".th-send").addEventListener("click",async()=>{
       const body=box.querySelector(".th-text").value.trim();
-      if(!body){ VX.toast("Escreva a resposta."); return; }
+      if(!body && !attachments.files.length){ VX.toast("Escreva a resposta ou anexe uma imagem."); return; }
       const who=requireAuthor(box); if(!who) return;
       const btn=box.querySelector(".th-send"); btn.disabled=true; btn.textContent="Enviando…";
+      const photos=[];let saved=false;
       try{
-        await VX.addReply(c.id,{ mockup_id:state.id, page_index:c.page_index, author:who, body, photos:[] });
+        for(const file of attachments.files) photos.push(await VX.uploadPhoto(state.id,file));
+        await VX.addReply(c.id,{ mockup_id:state.id, page_index:c.page_index, author:who, body, photos });
+        saved=true;
         await loadComments();
         const t2=threads().find(x=>x.root.id===c.id);
         const pin=document.querySelector(`.pin[data-tid="${c.id}"]`);
         if(t2&&pin) openThread(t2,pin); else closeBubble();
-      }catch(err){ console.error(err); btn.disabled=false; btn.textContent="Responder";
-        VX.toast("Não consegui responder. Falta rodar a migração da coluna parent_id no Supabase.",true); }
+      }catch(err){ console.error(err);
+        if(!saved && photos.length)await VX.removePhotos(photos).catch(cleanup=>console.warn(cleanup));
+        btn.disabled=false; btn.textContent="Responder";
+        VX.toast(missingColumn(err,"parent_id")?"Não consegui responder. Falta rodar a migração da coluna parent_id no Supabase.":"Não consegui responder — "+(err.message||err),true); }
     });
 
     box.querySelector(".b-del").addEventListener("click",async()=>{
@@ -504,6 +624,10 @@
         catch(err){ console.error(err);
           VX.toast("Não consegui marcar. Falta rodar a migração da coluna resolved no Supabase.",true); }
       });
+      card.tabIndex=0;
+      card.addEventListener("focus",()=>highlightArea(c.id));
+      card.addEventListener("blur",()=>highlightArea(activeThread));
+      card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();goToComment(c);closeDrawer();}});
       card.addEventListener("click",()=>{ goToComment(c); closeDrawer(); });
       drawerBody.appendChild(card);
     });
@@ -511,7 +635,7 @@
   // vai até a página do comentário e abre a thread (com a opção de entregar)
   function goToComment(c){
     if(isFolder()){ setFolderOpen(true); state.ry=0;state.rx=0; applyFolderRotation(); }
-    else { try{ $fb().turn("page", (c.page_index||0)+1); }catch(e){} }
+    else goTo((c.page_index||0)+1);
     setTimeout(()=>{
       renderPins();
       const t=threads().find(x=>x.root.id===c.id); if(!t) return;
@@ -529,32 +653,92 @@
   drawerBg.addEventListener("click",closeDrawer);
 
   // ================= navegação =================
-  const fNext=()=>{ try{ $fb().turn("next"); }catch(e){} };
-  const fPrev=()=>{ try{ $fb().turn("previous"); }catch(e){} };
-  const goTo=(n)=>{ try{ $fb().turn("page", Math.min(state.total,Math.max(1,n))); }catch(e){} };
+  // Um caminho de navegação para controles, teclado, gestos e comentários.
+  function goTo(n,animate=true){
+    if(isFolder() || !state.total || !Number.isFinite(n)) return;
+    const page=Math.min(state.total,Math.max(1,Math.trunc(n)));
+    if(!isPresentation()){ try{ $fb().turn("page",page); }catch(e){} return; }
+    const previous=state.slidePage;
+    state.slideAnimation?.cancel(); state.slideAnimation=null;
+    state.slidePage=page;
+    if(page!==previous) closeBubble();
+    let current;
+    flipEl.querySelectorAll(".pg").forEach(pg=>{
+      const active=Number(pg.dataset.page)===page-1;
+      pg.classList.toggle("is-current",active);
+      pg.setAttribute("aria-hidden",String(!active));pg.inert=!active;
+      if(active)current=pg;
+    });
+    syncPage(page);
+    if(animate && previous!==page && current && !window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+      state.slideAnimation=current.animate([
+        {transform:`translateX(${page>previous?36:-36}px)`,opacity:0.45},
+        {transform:"translateX(0)",opacity:1}
+      ],{duration:320,easing:"ease-out"});
+    }
+  }
+  function fNext(){
+    if(isPresentation()) goTo(curPage()+1);
+    else {try{$fb().turn("next");}catch(e){}}
+  }
+  function fPrev(){
+    if(isPresentation()) goTo(curPage()-1);
+    else {try{$fb().turn("previous");}catch(e){}}
+  }
+  function resizeSlides(){
+    const d=computeDims();
+    flipEl.style.width=d.pageW+"px";flipEl.style.height=d.pageH+"px";
+    flipEl.querySelectorAll(".pg").forEach(pg=>{pg.style.width=d.pageW+"px";pg.style.height=d.pageH+"px";});
+    goTo(curPage(),false);
+  }
+  let swipe=null;
+  flipEl.addEventListener("pointerdown",e=>{
+    if(!isPresentation() || state.commentMode || e.pointerType!=="touch" || !e.isPrimary || e.target.closest("button"))return;
+    swipe={id:e.pointerId,x:e.clientX,y:e.clientY};flipEl.setPointerCapture(e.pointerId);
+  });
+  flipEl.addEventListener("pointerup",e=>{
+    if(!swipe || swipe.id!==e.pointerId)return;
+    const start=swipe;swipe=null;
+    if(state.commentMode)return;
+    const dx=e.clientX-start.x,dy=e.clientY-start.y;
+    if(Math.abs(dx)>=40 && Math.abs(dx)>Math.abs(dy)*1.3){e.preventDefault();dx<0?fNext():fPrev();}
+  });
+  flipEl.addEventListener("pointercancel",()=>{swipe=null;});
+  flipEl.addEventListener("lostpointercapture",()=>{swipe=null;});
   $("nextBtn").addEventListener("click",fNext); $("prevBtn").addEventListener("click",fPrev);
   $("sideNext").addEventListener("click",fNext); $("sidePrev").addEventListener("click",fPrev);
   $("firstBtn").addEventListener("click",()=>goTo(1));
   $("lastBtn").addEventListener("click",()=>goTo(state.total));
   $("pageInput").addEventListener("change",(e)=>{ const v=parseInt(e.target.value,10); if(!isNaN(v)) goTo(v); });
-  $("fsBtn").addEventListener("click",()=>{
-    const el=$("viewer");
-    if(!document.fullscreenElement){ (el.requestFullscreen||el.webkitRequestFullscreen||function(){}).call(el); }
-    else { (document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document); }
+  $("fsBtn").addEventListener("click",async()=>{
+    try{
+      if(document.fullscreenElement) await document.exitFullscreen();
+      else await $("viewer").requestFullscreen();
+    }catch(err){ VX.toast("Não foi possível alterar a tela cheia.",true); }
+  });
+  document.addEventListener("fullscreenchange",async()=>{
+    const active=!!document.fullscreenElement;
+    $("fsBtn").title=active?"Sair da tela cheia":"Tela cheia";
+    $("fsBtn").setAttribute("aria-label",$("fsBtn").title);
+    $("fsBtn").setAttribute("aria-pressed",String(active));
+    await VX.nextFrame();
+    if(!bubble.hidden) placeBubble((parseFloat(bubble.style.left)||12)-14,(parseFloat(bubble.style.top)||12)+10);
+    window.dispatchEvent(new Event("resize"));
   });
 
   let rt, wasMobile=isMobile();
   window.addEventListener("resize",()=>{ clearTimeout(rt); rt=setTimeout(async()=>{
     if(!state.pages.length) return;
     if(isFolder()){ await buildFolder(); setFolderOpen(state.folderOpen); renderPins(); return; }
+    if(isPresentation()){ resizeSlides(); return; }
     const m=isMobile();
-    if(m!==wasMobile){ wasMobile=m; await buildFlipbook(); renderPins(); return; }
+    if(m!==wasMobile){ wasMobile=m; await buildFlipbook(curPage()); renderPins(); return; }
     const d=computeDims();
     try{
       flipEl.querySelectorAll(".pg").forEach(pg=>{ pg.style.width=d.pageW+"px"; pg.style.height=d.pageH+"px"; });
       $fb().turn("display", d.single?"single":"double");
       $fb().turn("size", d.single?d.pageW:d.pageW*2, d.pageH);
       renderPins();
-    }catch(e){ await buildFlipbook(); renderPins(); }
+    }catch(e){ await buildFlipbook(curPage()); renderPins(); }
   },180); });
 })();

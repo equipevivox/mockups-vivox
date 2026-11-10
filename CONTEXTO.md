@@ -1,6 +1,16 @@
 # Contexto atual — Mockups VIVOX
 
-Última atualização: 2026-09-09 (America/Cuiaba).
+Última atualização: 2026-11-10 (America/Cuiaba).
+
+## Apresentações, comentário por área e anexos (2026-11-10)
+
+- **Pendência principal:** aplicar no Supabase a migração `supabase/migrations/20261110180000_area_dos_comentarios.sql` (colunas `comments.w/h`). Não foi aplicada por falta de acesso ao Supabase na sessão. Até lá, em produção, o comentário por área é recusado com aviso claro, mantendo o rascunho; pin de ponto, respostas e anexos funcionam normalmente.
+- Tipo `apresentacao` (16:9, tolerância 0.03, JPEG com 1920px de largura): opção no envio, filtro no portfólio, capas e miniaturas horizontais. O banco aceita o valor: `APRESENTACAO_REVIVERE_EVENTO` foi enviado pelo usuário (35 páginas, privado).
+- Visualizador: apresentação sem turn.js, com slides absolutos em `#flipbook` e transição horizontal com fade (320ms), navegação central única, swipe e movimento reduzido. Revista/mockup seguem no turn.js; folder inalterado. Tela cheia nos quatro tipos.
+- Comentários: arrastar cria área (`x,y` = canto superior esquerdo; `w,h` relativos à página; nulos = pin de ponto), filha de `.pg`; folder só por clique. Anexos por botão, Ctrl+V e soltar, até cinco, também nas respostas. URLs de fotos só são aceitas se forem do bucket público; falha de gravação remove as fotos já enviadas (`VX.removePhotos`); excluir uma thread remove também as fotos das respostas.
+- `VX.viewerUrl` gera `/viewer.html?m=SLUG` em localhost e `/m/SLUG` em produção.
+- Verificado: 20 testes Node; Chrome headless com rede interceptada em 1440×1000 e 390×844 (`node tests/apresentacao.browser.cjs`, requer Playwright). Duas revisões independentes; a segunda liberou a publicação.
+- Não verificado: policy do Storage para exclusão anônima de fotos (se negar, a limpeza falha em silêncio); gravação real de área; celular físico; tela cheia de revista/folder em navegador real.
 
 ## Próxima sessão em outra máquina
 

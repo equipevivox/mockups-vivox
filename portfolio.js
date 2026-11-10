@@ -28,7 +28,7 @@
   function card(m){
     const a = document.createElement("a");
     a.className = "pf-card pf-card--"+m.type;
-    a.href = "/m/"+encodeURIComponent(m.id);
+    a.href = window.VX.viewerUrl(m.id);
     a.innerHTML = `
       <div class="pm">
         <div class="pm-obj">

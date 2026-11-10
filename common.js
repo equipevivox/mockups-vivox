@@ -9,10 +9,15 @@ window.VX = (function(){
   const publicUrl = (path)=>`${cfg.SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
   const pageUrl = (slug,i,version)=>publicUrl(`${slug}/pages/${i}.jpg`)
     +(version ? "?cacheNonce="+encodeURIComponent(version) : "");
+  function viewerUrl(slug, comentar=false){
+    const local=["localhost","127.0.0.1","[::1]"].includes(window.location.hostname);
+    const encoded=encodeURIComponent(slug);
+    return (local?"/viewer.html?m="+encoded:"/m/"+encoded)+(comentar?(local?"&":"?")+"comment=1":"");
+  }
   const esc = (s)=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
-  const TYPE_LABEL = { revista:"Revista", mockup:"Mockup", folder:"Folder" };
-  const normType = (t)=> (t==="mockup"||t==="folder") ? t : "revista";
+  const TYPE_LABEL = { revista:"Revista", mockup:"Mockup", folder:"Folder", apresentacao:"Apresentação" };
+  const normType = (t)=> (t==="mockup"||t==="folder"||t==="apresentacao") ? t : "revista";
 
   // slug do nome do arquivo: MAIÚSCULAS, sem acento, espaços -> "_"
   function makeSlug(name){
@@ -96,6 +101,7 @@ window.VX = (function(){
   async function addComment(c){
     const first = await sb.from("comments").insert(c);
     if(!first.error) return { positioned:true };
+    if(c.w!=null || c.h!=null) throw first.error; // Nunca descartar silenciosamente a marcação de uma área.
     const { x, y, ...rest } = c;
     const second = await sb.from("comments").insert(rest);
     if(second.error) throw first.error;
@@ -111,10 +117,17 @@ window.VX = (function(){
     const { error } = await sb.from("comments").update({ resolved: !!val }).eq("id", id);
     if(error) throw error;
   }
-  async function deleteComment(c){
-    const photos = Array.isArray(c.photos)?c.photos:[];
-    const paths = photos.map(u=>{ const p=u.split("/public/"+BUCKET+"/")[1]; return p; }).filter(Boolean);
+  // remove do Storage fotos já enviadas (ex.: quando a gravação do comentário falha)
+  async function removePhotos(urls){
+    const paths = (Array.isArray(urls)?urls:[]).map(u=>String(u).split("/public/"+BUCKET+"/")[1]).filter(Boolean);
     if(paths.length){ try{ await sb.storage.from(BUCKET).remove(paths); }catch(e){} }
+  }
+  async function deleteComment(c){
+    // as respostas são apagadas em cascata pelo banco; suas fotos precisam sair do Storage antes
+    let replyPhotos=[];
+    try{ const { data } = await sb.from("comments").select("photos").eq("parent_id",c.id);
+      replyPhotos=(data||[]).flatMap(r=>Array.isArray(r.photos)?r.photos:[]); }catch(e){}
+    await removePhotos([...(Array.isArray(c.photos)?c.photos:[]), ...replyPhotos]);
     const { error } = await sb.from("comments").delete().eq("id",c.id);
     if(error) throw error;
   }
@@ -127,7 +140,7 @@ window.VX = (function(){
     return publicUrl(path);
   }
 
-  return { cfg, BUCKET, sb, $, publicUrl, pageUrl, esc, toast, fmtDate, nextFrame, preloadImages,
+  return { cfg, BUCKET, sb, $, publicUrl, pageUrl, viewerUrl, esc, toast, fmtDate, nextFrame, preloadImages,
            makeSlug, TYPE_LABEL, normType, listMockups, listPublicMockups, notifyMaterialsChanged, getMockup, normalizeMaterialName, renameMockup,
-           listComments, addComment, addReply, setResolved, deleteComment, uploadPhoto };
+           listComments, addComment, addReply, setResolved, deleteComment, uploadPhoto, removePhotos };
 })();

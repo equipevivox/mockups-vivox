@@ -14,7 +14,7 @@
 <script src="/lib/turn.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <link rel="stylesheet" href="/style.css" />
-<link rel="stylesheet" href="/ui.css" />
+<link rel="stylesheet" href="/ui.css?v=20261110-4" />
 </head>
 <body class="is-viewer">
 
@@ -51,7 +51,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
           <span class="lbl">Comentários</span><span class="cmt-count" id="cmtCount" hidden>0</span>
         </button>
-        <button class="ghost-btn" id="fsBtn" title="Tela cheia">
+        <button class="ghost-btn" id="fsBtn" title="Tela cheia" aria-label="Tela cheia" aria-pressed="false" hidden>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
         </button>
       </div>
@@ -92,8 +92,6 @@
         <button class="ghost-btn" id="folderReset">Centralizar</button>
       </div>
     </div>
-  </div>
-
   <!-- painel lateral com a lista de comentários -->
   <div class="cmt-drawer" id="cmtDrawer">
     <div class="cmt-drawer-head">
@@ -118,8 +116,11 @@
 
   <div class="toast" id="toast"></div>
 
+
+  </div>
+
   <script src="/config.js"></script>
-  <script src="/common.js?v=20260909-2"></script>
-  <script src="/viewer.js?v=20260909-2"></script>
+  <script src="/common.js?v=20261110-2"></script>
+  <script src="/viewer.js?v=20261110-4"></script>
 </body>
 </html>

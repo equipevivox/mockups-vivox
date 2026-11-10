@@ -66,8 +66,8 @@
     $("cards").innerHTML="";
     items.forEach(m=>{
       const nc=counts[m.id]||0, pub=m.is_public===true;
-      const link=location.origin+"/m/"+encodeURIComponent(m.id);
-      const card=document.createElement("div"); card.className="card card--adm";
+      const link=location.origin+VX.viewerUrl(m.id);
+      const card=document.createElement("div"); card.className="card card--adm card--"+m.type;
       card.innerHTML=`
         <div class="adm-thumb" style="background-image:url('${VX.pageUrl(m.id,0,m.cover_version)}')"></div>
         <div class="meta">
@@ -86,14 +86,14 @@
           </form>
         </div>
         <div class="acts">
-          <a class="btn" href="/m/${encodeURIComponent(m.id)}" target="_blank" rel="noopener">Abrir</a>
-          <a class="btn" href="/m/${encodeURIComponent(m.id)}?comment=1" target="_blank" rel="noopener">Comentar</a>
+          <a class="btn" href="${VX.viewerUrl(m.id)}" target="_blank" rel="noopener">Abrir</a>
+          <a class="btn" href="${VX.viewerUrl(m.id,true)}" target="_blank" rel="noopener">Comentar</a>
           <button class="btn" data-act="copy">Copiar link</button>
           <button class="btn" data-act="rename" aria-expanded="false">Renomear</button>
           <button class="btn btn-danger" data-act="del">Excluir</button>
         </div>`;
       card.querySelector('[data-act="copy"]').addEventListener("click",async()=>{
-        try{ await navigator.clipboard.writeText(link); VX.toast("Link copiado: /m/"+m.id); }
+        try{ await navigator.clipboard.writeText(link); VX.toast("Link copiado: "+VX.viewerUrl(m.id)); }
         catch(e){ prompt("Copie o link:",link); }
       });
       card.querySelector('[data-act="del"]').addEventListener("click",()=>del(m));
@@ -198,13 +198,16 @@
     const t=b.dataset.type, f=pendingFile; closeType(); if(f) startUpload(f,t);
   }));
 
-  async function renderPdf(buf){
+  async function renderPdf(buf, type){
     const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
     const num = pdf.numPages, images=[];
     for(let i=1;i<=num;i++){
       const page=await pdf.getPage(i);
       const base=page.getViewport({scale:1});
-      const scale=Math.min(3, Math.max(1, 1400/base.width));
+      if(i===1 && type==="apresentacao" && Math.abs(base.height/base.width - 0.5625)>0.03){
+        throw new Error("Apresentações precisam ser horizontais em 16:9 (1920×1080). Ajuste o arquivo e tente novamente.");
+      }
+      const scale=type==="apresentacao" ? 1920/base.width : Math.min(3, Math.max(1, 1400/base.width));
       const vp=page.getViewport({scale});
       const c=document.createElement("canvas");
       c.width=Math.floor(vp.width); c.height=Math.floor(vp.height);
@@ -239,10 +242,10 @@
   }
 
   async function startUpload(file, type){
-    type = (type==="mockup"||type==="folder") ? type : "revista";
+    type = VX.normType(type);
     loader.classList.add("show"); progressBar.style.width="0%"; loaderSub.textContent="Lendo o PDF…";
     let out;
-    try{ out = await renderPdf(await file.arrayBuffer()); }
+    try{ out = await renderPdf(await file.arrayBuffer(), type); }
     catch(err){ console.error(err); loader.classList.remove("show");
       VX.toast("Não foi possível ler este PDF — "+(err.message||err), true); return; }
 

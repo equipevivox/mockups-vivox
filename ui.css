@@ -278,3 +278,40 @@ body.cmt-mode .pg,body.cmt-mode .pg img,body.cmt-mode .fpanel,body.cmt-mode .ffv
   .type-options--3{grid-template-columns:1fr}
   .viewer-actions .lbl{display:none}
 }
+
+/* Slides horizontais: capa completa, sem lombada de revista. */
+.pf-card--apresentacao .pm-obj{aspect-ratio:16/9}
+.pf-card--apresentacao .pm-cover{background-size:contain;background-repeat:no-repeat}
+.pf-card--apresentacao .pm-spine,.pf-card--apresentacao .pm-edge{display:none}
+.pf-type--apresentacao{color:var(--gold);background:rgba(204,182,145,.12);border-color:var(--border-strong)}
+.admin-page .card--apresentacao .adm-thumb{height:auto;aspect-ratio:16/9;background-size:contain;background-repeat:no-repeat}
+#fsBtn[hidden]{display:none}
+.is-viewer .controls[hidden],.is-viewer #folderView[hidden]{display:none}
+.viewer--apresentacao .pg img{object-fit:contain}
+.viewer:fullscreen{width:100%;height:100%;background:var(--bg-0)}
+@media(max-width:760px){
+  .viewer--apresentacao .viewer-top{flex-wrap:wrap}
+  .viewer--apresentacao .viewer-title{max-width:100%;flex-basis:100%}
+  .viewer--apresentacao .viewer-actions{width:100%;justify-content:center}
+}
+
+/* A marca de uma área acompanha a página e usa coordenadas relativas. */
+.comment-region{position:absolute;inset:0;pointer-events:none}
+.comment-area{position:absolute;border:1px solid var(--gold);background:rgba(204,182,145,.08);pointer-events:none;box-sizing:border-box;opacity:0}
+.comment-region:is(.is-hover,.is-active) .comment-area,.area-draft{opacity:1}
+.area-draft{z-index:8}
+body.marks-off .comment-region,body.marks-off .area-draft{display:none}
+body.cmt-mode .pg{touch-action:none;user-select:none;-webkit-user-select:none}
+.b-attach{border:1px solid var(--gold);background:rgba(204,182,145,.15);color:var(--gold-bright);padding:9px 12px;border-radius:8px;cursor:pointer;font:inherit;font-weight:600}
+.attachment-hint{display:block;color:var(--text-dim);font-size:11px;margin-top:8px}
+.is-dragover{outline:2px dashed var(--gold);outline-offset:-3px}
+.bubble{max-height:calc(100dvh - 24px);overflow-y:auto}
+
+/* Apresentações usam slides, sem dobra de papel. */
+#flipbook.slide-deck{position:relative;overflow:hidden;touch-action:pan-y}
+#flipbook.slide-deck>.pg{position:absolute;inset:0;visibility:hidden;pointer-events:none}
+#flipbook.slide-deck>.pg.is-current{visibility:visible;pointer-events:auto}
+body.cmt-mode #flipbook.slide-deck{touch-action:none}
+
+.type-options--4{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:560px){.type-options--4{grid-template-columns:1fr}}

@@ -57,6 +57,11 @@ No painel, use **Renomear → Nome exibido → Salvar nome** em cada material pa
 | **Revista** | Qualquer PDF | Spread de 2 páginas (turn.js `display:double`); 1 página no celular |
 | **Mockup** | **Só A4 retrato** (aspect ≈ 1.4142, tolerância 0.03) | 1 página centralizada |
 | **Folder** | PDF com **exatamente 2 páginas** (frente e verso) | Tri-fold 3D: cada spread é cortado em 3 painéis; gira arrastando, clique abre/fecha |
+| **Apresentação** | Primeira página horizontal 16:9 (altura/largura 0.5625, tolerância 0.03) | Um slide por vez, ajustado à área, com comentários e tela cheia quando suportada |
+
+Apresentações são renderizadas em JPEG com largura de 1920px (1080px de altura para 16:9 exato). O tipo salvo é `apresentacao`; os demais tipos mantêm a renderização anterior. O botão de tela cheia está disponível em todos os tipos quando a Fullscreen API é suportada. Balões, lista de comentários e rascunhos permanecem disponíveis nesse modo.
+
+A apresentação usa slides sobrepostos com somente a página atual visível, sem turn.js: avanço entra pela direita e retorno pela esquerda, com deslocamento de 36px e fade em 320ms (ease-out). Com movimento reduzido a troca é imediata. Deslizar horizontalmente o dedo navega fora do modo de comentário; nesse modo o gesto continua selecionando áreas. Revista e mockup mantêm o folheamento original.
 
 O corte do folder usa `background-size: 300% 100%` + `background-position` em `0% / 50% / 100%`.
 
@@ -72,6 +77,11 @@ O corte do folder usa `background-size: 300% 100%` + `background-position` em `0
 - Botão **Ocultar** esconde todos os marcadores (leitura sem distração).
 - O nome é **obrigatório** na primeira vez e fica guardado em `localStorage` (`vivox_author`).
 - Até **5 imagens** por comentário.
+- No modo de comentário, clicar cria um ponto; arrastar sobre revista, mockup ou apresentação marca uma área. O retângulo acompanha a página e aparece ao passar pelo pin, abrir a thread ou focar o item na lista. Folder mantém comentários por clique.
+- Imagens podem ser escolhidas, coladas ou soltas no compositor, inclusive nas respostas, com até cinco anexos por envio e miniaturas removíveis.
+- Fotos armazenadas só são exibidas e abertas quando pertencem ao bucket público do projeto, com URL HTTP(S) válida. Se a gravação falhar após o envio das imagens, as fotos recém-enviadas são removidas e o rascunho permanece para nova tentativa.
+
+Comentários de área usam `w`/`h` relativos à página e `x`/`y` como canto superior esquerdo. Dependem da migração dessas duas colunas pelo responsável pelo backend. Se a gravação falhar, o frontend mantém o compositor e não descarta a área silenciosamente. Comentários de ponto e sem posição continuam válidos.
 
 Os pins ficam **dentro** do elemento da página (`.pg`) ou do painel do folder, por isso acompanham a virada.
 
@@ -141,7 +151,7 @@ Projeto `kthestvyzvbbpnsulned` (região sa-east-1).
 | `name` | text | nome exibido editável; inicialmente recebe o nome do PDF |
 | `num_pages` | int | |
 | `aspect` | float | altura/largura da página |
-| `type` | text | `revista` \| `mockup` \| `folder` |
+| `type` | text | `revista` \| `mockup` \| `folder` \| `apresentacao` |
 | `is_public` | bool | aparece no portfólio |
 | `cover_version` | uuid | versão de cache das páginas, gerada pelo banco no envio |
 | `expires_at` | timestamptz | não usado (sempre null) |
@@ -187,6 +197,7 @@ python -m http.server 8130
 
 As rotas limpas (`/portfolio`, `/m/SLUG`) **só existem no Vercel**. Localmente use:
 `viewer.html?m=SLUG` — o `viewer.js` aceita tanto o caminho quanto a query.
+Os links gerados pelo painel e portfólio usam automaticamente esse formato em `localhost`, `127.0.0.1` e `[::1]`; nos outros hosts preservam `/m/SLUG`. O modo de comentário acrescenta o parâmetro `comment=1`.
 
 Verificações sem dependências adicionais: `node --test tests/*.test.cjs`. Os testes de navegador e de banco devem usar dados isolados ou transações revertidas, preservando os materiais reais.
 

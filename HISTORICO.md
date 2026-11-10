@@ -1,3 +1,53 @@
+## 2026-11-10 — Publicação: apresentações, comentário por área e anexos
+
+**Pedido:** visualização de apresentações 1920×1080 com os mesmos comentários; comentário selecionando área com o mouse; anexos de imagem; ajustar a animação de passar de página e subir ao Git.
+
+**Condução:** Claude orquestrou e fez a parte de dados (migração `comments.w/h`, `VX.removePhotos`, exclusão de fotos das respostas); Codex fez o frontend em quatro tarefas, detalhadas nas entradas abaixo; o Revisador reprovou a primeira versão (XSS em URLs de fotos, fotos órfãs, constraint incompleta, tela cheia retirada de três tipos) e liberou a segunda. A animação ajustada foi a da apresentação: a dobra de folha deu lugar a uma transição de slides.
+
+**Verificações:** 20 testes Node; testes de navegador do Codex com dados simulados. O envio real de uma apresentação pelo usuário confirmou que o banco aceita `type = apresentacao`. O erro “Could not find the 'h' column” visto pelo usuário veio da migração ainda não aplicada.
+
+**Pendências:** aplicar a migração de áreas no Supabase (sem acesso nesta sessão); até lá a área é recusada com aviso. Conferir a policy de exclusão no Storage, validar em celular físico e testar gravação real de área.
+
+## 2026-11-10 — Correções da revisão 1 (frontend local)
+
+**Pedido:** corrigir A1/A2/M2/M4 e os achados menores de frontend, preservando common.js e migração ajustados pelo Claude, sem commit/push.
+
+**Alterações:** validação de fotos HTTP(S) do bucket público com escape no DOM e abertura noopener/noreferrer em raiz/respostas; descarte de números, objetos e esquemas/hosts inválidos. Limpeza de uploads por `VX.removePhotos` em falha de gravação, preservando texto e anexos. Aviso claro de indisponibilidade de áreas para colunas w/h ausentes e aviso de parent_id restrito a erros dessa coluna. Fullscreen nos quatro tipos sem descartar compositor. Colagem de texto+imagem preserva ambos; drop fora do balão não navega. Escape duplicado removido, condição impossível em folder removida e quatro opções em grade 2×2 (uma coluna móvel). Teste de navegador usa os.tmpdir e cobre pin por toque emulado.
+
+**Verificações:** 20 testes Node e sintaxe/diff; navegador com dados simulados em 1440×1000 e 390×844, sem gravações reais. Casos de XSS/URLs inválidas em raiz/resposta, cleanup após falha de área/resposta, texto/anexos preservados, mensagem real de rede e mensagem específica de parent_id, fullscreen mantendo rascunho, colagem mista/drop externo e pin por toque. Tela cheia de revista/mockup/folder também verificada.
+
+**Pendências:** A3 (constraint de tipo) e confirmação da migração pertencem ao Claude/backend. Common.js e migração não foram editados nesta tarefa. Publicação e revisão final pelo Claude; sem commit/push/deploy.
+
+## 2026-11-10 — Transição de slides da apresentação (trabalho local)
+
+**Pedido:** substituir somente na apresentação a dobra do turn.js por deslize horizontal curto com fade, mantendo comentários e navegação; sem commit/push.
+
+**Alterações:** slides `.pg` absolutos com dimensões explícitas e um único atual visível/interativo. Entrada de 36px pela direita ao avançar e esquerda ao voltar, fade em 320ms ease-out via Web Animations, cancelando animação anterior em navegação rápida. Movimento reduzido faz troca imediata. Controle central de página/ir/próxima/anterior atende botões, teclado, campo, laterais, lista, swipe, resize e fullscreen; pins e áreas continuam dentro das páginas. Revista/mockup mantêm turn.js e folder não mudou. Assets do viewer e CSS renovados para `20261110-3`.
+
+**Verificações:** 20 testes Node aprovados; sintaxe/diff; Chrome headless em 1440×1000 e 390×844 com dados simulados. Apresentação verificada com turn.js substituído por um espião que rejeita chamadas (zero chamadas), navegação rápida mantendo uma página, animação direcional, movimento reduzido, fullscreen, swipe, seleção de área e fotos. Regressão de revista/mockup nas duas resoluções aprovada. Testes de apresentação também cobrem salto pela lista, teclado, campo e resize preservando página. Sem gravações reais.
+
+**Pendências:** revisão/publicação pelo Claude e validação em dispositivo físico. A confirmação de migração para gravação real de áreas continua a cargo do backend. Sem commit/push/deploy.
+
+## 2026-11-10 — Áreas de comentário, anexos e links locais (trabalho local)
+
+**Pedido:** seleção de área no estilo Figma, anexos evidentes com colar/soltar e fotos nas respostas, correção dos links locais; sem commit/push.
+
+**Alterações:** Pointer Events para clicar ou arrastar (limiar de 6px), área percentual dentro da página com pin no canto superior esquerdo e destaque por hover/thread/foco na lista. Revista, mockup e apresentação compartilham o recurso; folder mantém clique. O modo comentário interrompe animação pendente e desativa turn.js. Imagens podem ser selecionadas, coladas ou soltas nos compositores de comentário e resposta, com limite de cinco e miniaturas removíveis. Respostas exibem fotos. Helper `VX.viewerUrl` aplicado a Abrir/Comentar/copiar e portfólio, com rotas locais e públicas. Assets renovados para `20261110-2`.
+
+**Verificações:** 18 testes Node aprovados; Chrome headless em 1440×1000 e 390×844 para apresentação, mockup e revista: pin/thread de área, resposta com foto, resolução/filtro/ocultar, clique sem w/h, arrasto com dimensões relativas e, no viewport móvel, toque emulado, colagem, drop, limite de cinco e remoção de miniatura. Navegação e fullscreen de apresentação continuam funcionando. Sem erros JavaScript na execução final. Todas as requisições interceptadas, nenhuma gravação real.
+
+**Pendências:** Claude aplica/confirma migração `comments.w/h` antes de testar gravação de áreas no backend real. Frontend não descarta a área em caso de erro. Validação física em celular e revisão visual humana continuam recomendadas. Sem commit/push/deploy.
+
+## 2026-11-10 — Apresentações horizontais (trabalho local)
+
+**Pedido:** acrescentar apresentações 1920×1080 com os mesmos comentários estilo Figma, sem commit/push antes da revisão do Claude.
+
+**Alterações:** tipo `apresentacao` normalizado e rotulado; opção de envio com validação da primeira página em 16:9 (tolerância 0.03) antes de gravar e renderização em 1920px de largura. Filtro de apresentações e estilos de capas/miniaturas completos em 16:9. Viewer em página única com turn.js, mantendo pins em `.pg`, controles existentes e modo de comentário. Tela cheia com tratamento de erro e recálculo, incluindo balões e painel no elemento fullscreen. Correção da precedência CSS de controles ocultos. Assets alterados versionados.
+
+**Verificações:** 14 testes Node aprovados; sintaxe e diff sem erros. Chrome headless em 1440×1000 e 390×844, com requisições interceptadas e dados simulados: proporção e encaixe, pin/thread, resposta, entregue, filtro, ocultar, comentário com foto, navegação, bloqueio do turn.js ao comentar e tela cheia com preservação da página. Capturas inspecionadas; nenhum erro JavaScript nas duas resoluções. Sem dados reais alterados.
+
+**Pendências:** revisão visual dos cartões/miniaturas e temas, avaliação humana da animação larga e integração real de envio. Navegação funcional aprovada não substitui avaliação da animação. Sem alteração de schema/fundo, sem commit, push ou deploy.
+
 # Histórico de trabalho — Mockups VIVOX
 
 Acrescente novas entradas no início, usando a data em `America/Cuiaba`. Registre o pedido, as alterações, decisões, verificações e pendências. O diff completo de cada entrega fica no histórico Git; este arquivo explica o contexto. Consulte [CONTEXTO.md](CONTEXTO.md) para o estado atual.
