@@ -12,7 +12,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <link rel="stylesheet" href="/style.css" />
 <link rel="stylesheet" href="/ui.css?v=20261126-2" />
-<link rel="stylesheet" href="/lp.css?v=20261126-1" />
+<link rel="stylesheet" href="/lp.css?v=20261126-2" />
 </head>
 <body class="is-viewer is-lp">
 
@@ -76,11 +76,11 @@
               sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads"
               referrerpolicy="no-referrer"></iframe>
             <!-- camada da página: os pins são filhos dela e acompanham a rolagem do site -->
-            <div class="lp-marks" aria-hidden="false"><div class="lp-doc" id="lpDoc"><div class="pins" id="lpPins"></div></div></div>
+            <div class="lp-marks"><div class="lp-doc" id="lpDoc"><div class="pins" id="lpPins"></div></div><div class="lp-float pins" id="lpFloat"></div></div>
             <div class="lp-catch" id="lpCatch" hidden></div>
           </div>
         </div>
-        <div class="cmt-hint" id="cmtHint" hidden>Clique ou arraste sobre a página para comentar · role com a roda do mouse · <b>Esc</b> cancela</div>
+        <div class="cmt-hint" id="cmtHint" hidden>Passe o mouse para ver o componente · clique ou arraste para comentar nele · <b>Esc</b> cancela</div>
         <div class="lp-overview" id="lpOverview" hidden></div>
       </main>
     </div>
@@ -110,6 +110,6 @@
 
   <script src="/config.js"></script>
   <script src="/common.js?v=20261126-1"></script>
-  <script src="/lp.js?v=20261126-1"></script>
+  <script src="/lp.js?v=20261126-2"></script>
 </body>
 </html>

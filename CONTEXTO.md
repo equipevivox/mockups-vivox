@@ -9,8 +9,9 @@
 - Protótipo criado: `LP_DR_JOAO_MARDIO` (“LP Dr. João Márdio”, 5 páginas, privado, capa = print do topo). Carrossel, popups, links internos e o modelo 3D funcionam pela revisão.
 - Sem migração: config em `{slug}/landing.json` (rotulado `image/png` porque o bucket só aceita imagens); comentários em `page_index`/`x`/`y` existentes (ver README). O banco aceitou `type = landing` (teste com linha temporária, removida).
 - Verificado: 25 testes Node; `tests/landing.browser.cjs` no Chrome 1440×1000 e 390×844 contra a LP real (rolagem, gravação simulada com y correto, navegação interna, celular, visão geral); carga real de `LP_DR_JOAO_MARDIO` e formulário do painel localmente.
-- Limitações: comentário por área continua dependendo da migração `w/h`; sites com anti-robô/login podem não abrir; `fetch` acima de 4 MB pelo proxy falha; o estado de carrossel/popup não é reaberto ao ir a um comentário; `lp.js` duplica a UI de comentários do `viewer.js` (unificar depois).
-- Próximos passos: validar em produção com o usuário; liberar `application/json` no bucket (ou coluna `site jsonb`); recorte de print junto do comentário.
+- Limitações: áreas de comentários antigos (sem âncora) dependem da migração `w/h`; sites com anti-robô/login podem não abrir; `fetch` acima de 4 MB pelo proxy falha; o estado de carrossel/popup não é reaberto ao ir a um comentário; `lp.js` duplica a UI de comentários do `viewer.js` (unificar depois).
+- Comentários presos ao componente (pedido do usuário: no popup e no carrossel o pin ficava solto na página): destaque do componente ao passar o mouse, pin que acompanha o card e some com o popup fechado, rótulo “Popup …/Carrossel … › card …” no balão e na lista, e “ir até o comentário” reabrindo o popup pelo botão certo ou levando o carrossel ao card. Âncora em `photos` (`vx_lp`), sem migração; áreas da LP deixam de depender de `w/h`.
+- Próximos passos: validar em produção com o usuário; liberar `application/json` no bucket (ou coluna `site jsonb`/`anchor jsonb`); recorte de print junto do comentário; faixas em movimento contínuo (depoimentos) só são seguidas enquanto visíveis.
 
 ## Apresentações, comentário por área e anexos (2026-11-10)
 

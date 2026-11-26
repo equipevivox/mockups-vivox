@@ -79,3 +79,12 @@
   .lp-viewer .viewer-actions{width:100%;justify-content:space-between}
   .lp-seg-btn .lbl{display:none}
 }
+
+/* pins ancorados em componentes: posição informada pelo script da LP, em px da janela do site */
+.lp-float [hidden]{display:none!important}
+.lp-ctx{display:inline-flex;align-items:center;gap:6px;max-width:100%;margin:2px 0 8px;padding:4px 9px;border-radius:7px;
+  background:rgba(204,182,145,.12);border:1px solid var(--border-strong);color:var(--gold-bright);font-size:11.5px;font-weight:700;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lp-ctx::before{content:"";flex:0 0 auto;width:10px;height:10px;border:1.5px solid currentColor;border-radius:2px}
+.lp-hint{margin:0 0 10px;padding:8px 10px;border-radius:8px;background:rgba(211,3,3,.08);border:1px solid rgba(211,3,3,.3);color:#ffcdc4;font-size:12px;line-height:1.45}
+.cmt-where.lp-ctx-line{color:var(--gold);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

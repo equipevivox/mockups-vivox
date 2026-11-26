@@ -54,6 +54,7 @@ O worker **precisa ser same-origin** (`/pdf.worker.min.js`, versionado no repo).
 - Mantenha `Content-Security-Policy: sandbox` nas respostas do proxy e o endereço vindo só de `{slug}/landing.json`: a cópia roda código de terceiros.
 - O iframe tem URL reescrita pelo script; em testes, localize-o pelo elemento `#lpFrame`, não pela URL.
 - O bucket `mockups` recusa `application/json`; `VX.saveLandingConfig` reenvia como `image/png`. Comentários de LP usam `page_index = página × 2 + dispositivo` e `y` em px — não converta para 0..1.
+- A âncora do componente fica em `photos` como `{vx_lp:{…}}`. Qualquer código que percorra `photos` precisa ignorar itens que não são string (já é o caso em `safePhotoUrl` e `removePhotos`). Pins ancorados ficam em `#lpFloat` e são posicionados pelo script da LP; não os mova para `.lp-doc`.
 
 ### Geral
 - Evite `requestAnimationFrame` no caminho crítico de carregamento: ele não dispara em aba não renderizada. Use o helper `VX.nextFrame()`, que tem fallback por `setTimeout`.

@@ -1,3 +1,15 @@
+## 2026-11-26 — Comentários presos ao componente (popup e carrossel) nas landing pages
+
+**Pedido:** no popup o comentário era feito, mas ao fechar o pin continuava aparecendo, sem indicar que era do popup; no carrossel o pin ficava preso à página e não acompanhava o card. Selecionar o componente e amarrar o comentário a ele.
+
+**Alterações:** `lp-review.js` destaca o componente sob o mouse (contorno + nome), devolve a âncora (seletor, texto, posição relativa, contexto popup/carrossel com nome do card, botão que abriu o popup), acompanha os componentes comentados a cada quadro informando posição e visibilidade (oculto, recortado pelo carrossel, coberto), e reabre o popup / leva o carrossel ao card. `lp.js` guarda a âncora em `photos` (`vx_lp`), desenha os pins ancorados em `#lpFloat`, mostra o contexto no balão, na thread e na lista, e usa a reabertura em “ir até o comentário”, com aviso quando não consegue.
+
+**Decisões:** âncora por elemento (seletor + texto) em vez de coordenada; sem migração, usando o `jsonb` de `photos` com um objeto que as telas de fotos ignoram. Contexto detectado por padrões genéricos (dialog/aria/classes/scroll-snap/animação), não por regras da LP do Dr. João.
+
+**Verificações:** 25 testes Node; `tests/landing.browser.cjs` contra a LP real: popup do certificado (pin visível aberto, some ao fechar, reabre pelo selo), popup compartilhado dos cards (reabre o detalhe do mesmo card), carrossel “Áreas de atuação” (pin acompanha o card 1184→855 px, some fora do recorte, volta ao ir ao comentário).
+
+**Pendências:** validar com o usuário em produção; a faixa de depoimentos em movimento contínuo não é “parada” para mostrar o card.
+
 ## 2026-11-26 — Landing pages ao vivo no grid (protótipo com a LP do Dr. João)
 
 **Pedido:** visualizar e comentar landing pages com várias páginas, carrossel, 3D e popups; protótipo com `lp-drjoaomardio.vivoxmarketing.com.br`; opção “Landing Page” em “O que você está enviando?” com ícone no padrão dos demais.

@@ -4,25 +4,32 @@
  *   page_index = índice da página × 2 + dispositivo (0 = computador, 1 = celular)
  *   x = posição relativa à largura do site (0..1)
  *   y = posição em px no documento, na largura do dispositivo
- *   w = largura relativa; h = altura em px ÷ 10000 (o banco limita h a 0..1)
+ *   w = largura relativa; h = altura em px ÷ 10000 (o banco limita h a 0..1) — comentários antigos
+ *
+ * Âncora no componente (popup, card de carrossel…): fica em photos como objeto
+ *   { vx_lp: { sel, text, tag, label, fx, fy, fw, fh, ctx, ctxName, opener, openerText, area } }
+ *   (as telas de fotos ignoram itens que não são URL). x/y continuam como posição de reserva.
  */
 (function(){
   "use strict";
   const VX = window.VX, $ = VX.$;
   const DEVICES = { desktop:{ w:1440, h:900, label:"Computador" }, mobile:{ w:390, h:844, label:"Celular" } };
   const H_SCALE = 10000;
+  const META = "vx_lp";
+  const metaOf = (c)=>{ const m=(Array.isArray(c.photos)?c.photos:[]).find(p=>p && typeof p==="object" && p[META] && typeof p[META].sel==="string"); return m ? m[META] : null; };
+  const anchorOf = (c)=>{ const a=metaOf(c); return a && a.sel ? a : null; }; // âncora em componente
   const DEV_ICON = {
     desktop:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
     mobile:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></svg>'
   };
 
   const viewer=$("viewer"), frame=$("lpFrame"), canvas=$("lpCanvas"), deviceEl=$("lpDevice"), stage=$("lpStage");
-  const docEl=$("lpDoc"), pinsEl=$("lpPins"), catchEl=$("lpCatch"), overviewEl=$("lpOverview"), pagesEl=$("lpPages");
+  const docEl=$("lpDoc"), pinsEl=$("lpPins"), floatEl=$("lpFloat"), catchEl=$("lpCatch"), overviewEl=$("lpOverview"), pagesEl=$("lpPages");
   const bubble=$("bubble"), drawer=$("cmtDrawer"), drawerBody=$("cmtDrawerBody"), drawerBg=$("drawerBackdrop");
   const loader=$("loader"), progressBar=$("progressBar");
 
   const state = { id:null, name:"", pages:[], pageIdx:0, extraPath:null, device:"desktop", scale:1, vh:900,
-    lp:{ scrollY:0, docH:0 }, ready:false, waiters:[], comments:[], commentMode:false, overview:false,
+    lp:{ scrollY:0, docH:0 }, ready:false, waiters:[], comments:[], anchorPos:new Map(), picks:new Map(), reveals:new Map(), commentMode:false, overview:false,
     showDone:false, drawerFilter:"abertos", hideMarks: localStorage.getItem("vivox_hide_marks")==="1" };
 
   const pageKey = (idx,dev)=>idx*2+(dev==="mobile"?1:0);
@@ -151,7 +158,7 @@
     closeBubble();
     if(idx>=0){ state.pageIdx=idx; state.extraPath=null; }
     else { state.pageIdx=-1; state.extraPath=opts.path||"/"; if(state.commentMode) setCommentMode(false); }
-    state.ready=false; state.lp={ scrollY:0, docH:0 }; state.pendingHash=opts.hash||"";
+    state.ready=false; state.lp={ scrollY:0, docH:0 }; state.pendingHash=opts.hash||""; state.anchorPos.clear();
     applyScroll(); renderPins(); renderPages(); syncUrl();
     frame.src=proxyUrl(currentPath());
     clearTimeout(readyTimer);
@@ -165,6 +172,7 @@
     state.ready=true;
     if(firstLoad){ firstLoad=false; progressBar.style.width="100%"; loader.classList.remove("show"); }
     if(!withScript) VX.toast("A página abriu sem o script de revisão; os comentários podem não acompanhar a rolagem.", true);
+    else syncAnchors();
     state.waiters.splice(0).forEach(fn=>fn());
   }
   function waitReady(){
@@ -182,6 +190,13 @@
         markReady(true);
         if(state.pendingHash){ post({ type:"hash", hash:state.pendingHash }); state.pendingHash=""; }
       }
+    }else if(m.type==="anchors"){
+      state.anchorPos=new Map((m.items||[]).map(i=>[i.id,i]));
+      updateFloat();
+    }else if(m.type==="picked"){
+      const fn=state.picks.get(m.req); if(fn){ state.picks.delete(m.req); fn(m.anchor||null); }
+    }else if(m.type==="revealed"){
+      const fn=state.reveals.get(m.id); if(fn){ state.reveals.delete(m.id); fn(!!m.ok); }
     }else if(m.type==="hello"){
       post({ type:"ping" });
     }else if(m.type==="navigate"){
@@ -194,6 +209,60 @@
   function applyScroll(){
     docEl.style.height=Math.max(state.lp.docH, state.vh)+"px";
     docEl.style.transform=`translateY(${-state.lp.scrollY}px)`;
+  }
+
+  // ================= âncoras em componentes =================
+  // O script da LP acompanha os componentes comentados desta página/dispositivo.
+  function syncAnchors(){
+    if(!state.ready || state.pageIdx<0) return;
+    const key=pageKey(state.pageIdx,state.device);
+    const items=threads().filter(t=>t.root.page_index===key).map(t=>{ const a=anchorOf(t.root); return a ? Object.assign({ id:t.root.id }, a) : null; }).filter(Boolean);
+    post({ type:"anchors", items });
+  }
+  let pickSeq=0;
+  function pick(vx,vy){
+    return new Promise(res=>{
+      const req=++pickSeq; state.picks.set(req,res);
+      post({ type:"pick", req, x:vx, y:vy });
+      setTimeout(()=>{ if(state.picks.has(req)){ state.picks.delete(req); res(null); } },900);
+    });
+  }
+  function reveal(id){
+    return new Promise(res=>{
+      state.reveals.set(id,res); post({ type:"reveal", id });
+      setTimeout(()=>{ if(state.reveals.has(id)){ state.reveals.delete(id); res(false); } },8000);
+    });
+  }
+  // Posiciona os pins ancorados pela posição que o script informou (px da janela do site).
+  function updateFloat(){
+    floatEl.querySelectorAll("[data-anchor]").forEach(node=>{
+      const p=state.anchorPos.get(node.dataset.anchor);
+      const fallback=!p || p.found===false;
+      const show=!!(p && p.visible);
+      node.hidden=!show;
+      if(fallback){ node.hidden=true; return; }
+      if(node.classList.contains("comment-region")){
+        const rect=node.querySelector(".comment-area"), pin=node.querySelector(".pin");
+        Object.assign(rect.style,{ left:p.x+"px", top:p.y+"px", width:Math.max(4,p.w)+"px", height:Math.max(4,p.h)+"px" });
+        pin.style.left=p.x+"px"; pin.style.top=p.y+"px";
+      }else{ node.style.left=p.x+"px"; node.style.top=p.y+"px"; }
+    });
+    // componente não encontrado (site mudou): o pin volta para a posição de reserva no documento
+    let changed=false;
+    floatEl.querySelectorAll("[data-anchor]").forEach(node=>{ const p=state.anchorPos.get(node.dataset.anchor); if(p && p.found===false && !node.dataset.lost){ node.dataset.lost="1"; changed=true; } });
+    if(changed) renderPins(false);
+  }
+  const ctxLabel=(a)=>{
+    if(!a) return "";
+    const where = a.ctx==="popup" ? "Popup" : a.ctx==="carousel" ? "Carrossel" : "";
+    const name = a.ctxName ? ` “${a.ctxName}”` : "";
+    if(a.ctx==="carousel" && a.ctxItem) return `${where}${name} › card “${a.ctxItem}”`;
+    return (where ? where+name+" › " : "")+(a.label||a.tag||"componente");
+  };
+  function revealHint(a){
+    if(a.ctx==="popup") return `Este comentário está no popup${a.ctxName?` “${VX.esc(a.ctxName)}”`:""}.`+(a.openerText?` Ele abre pelo botão “${VX.esc(a.openerText)}”.`:" Abra o popup no site para ver o marcador.");
+    if(a.ctx==="carousel") return `Este comentário está no card “${VX.esc(a.ctxItem||a.label||"")}” do carrossel. Avance o carrossel até ele para ver o marcador.`;
+    return "O componente deste comentário não está visível agora.";
   }
 
   // ================= visão geral (quadros lado a lado) =================
@@ -256,16 +325,37 @@
   function highlightArea(id){
     document.querySelectorAll(".comment-region").forEach(el=>el.classList.toggle("is-active",el.dataset.tid===id));
   }
-  function renderPins(){
-    pinsEl.innerHTML="";
+  function renderPins(resync=true){
+    const lost=new Set([...floatEl.querySelectorAll("[data-lost]")].map(n=>n.dataset.anchor));
+    pinsEl.innerHTML=""; floatEl.innerHTML="";
     if(state.pageIdx<0) return;
     const key=pageKey(state.pageIdx,state.device);
     threads().forEach(t=>{
       const c=t.root;
-      if(c.page_index!==key || c.x==null || c.y==null) return;
+      if(c.page_index!==key) return;
       if(isDone(t) && !state.showDone) return;
+      const a=metaOf(c);
+      if(a && a.sel && !lost.has(c.id)){
+        const pin=pinEl(t);
+        if(a.area){
+          const region=document.createElement("div"); region.className="comment-region"; region.dataset.tid=c.id; region.dataset.anchor=c.id; region.hidden=true;
+          const rect=document.createElement("div"); rect.className="comment-area";
+          region.append(rect,pin); floatEl.appendChild(region);
+          pin.addEventListener("mouseenter",()=>region.classList.add("is-hover"));
+          pin.addEventListener("mouseleave",()=>region.classList.remove("is-hover"));
+          region.classList.toggle("is-active",activeThread===c.id);
+        }else{ pin.dataset.anchor=c.id; pin.hidden=true; floatEl.appendChild(pin); }
+        return;
+      }
+      if(c.x==null || c.y==null) return;
       const pin=pinEl(t); pin.style.left=(c.x*100)+"%"; pin.style.top=c.y+"px";
-      if(c.w>0 && c.h>0){
+      const docArea = a && a.area && a.area.doc;
+      if(docArea){
+        const region=document.createElement("div"); region.className="comment-region"; region.dataset.tid=c.id;
+        const rect=document.createElement("div"); rect.className="comment-area";
+        Object.assign(rect.style,{ left:c.x*100+"%", top:c.y+"px", width:docArea.w*100+"%", height:docArea.h+"px" });
+        region.append(rect,pin); pinsEl.appendChild(region);
+      }else if(c.w>0 && c.h>0){
         const region=document.createElement("div"); region.className="comment-region"; region.dataset.tid=c.id;
         const rect=document.createElement("div"); rect.className="comment-area";
         Object.assign(rect.style,{ left:c.x*100+"%", top:c.y+"px", width:c.w*100+"%", height:(c.h*H_SCALE)+"px" });
@@ -277,11 +367,15 @@
         region.classList.toggle("is-active",activeThread===c.id);
       }else pinsEl.appendChild(pin);
     });
+    for(const id of lost){ const n=floatEl.querySelector(`[data-anchor="${id}"]`); if(n) n.dataset.lost="1"; }
+    updateFloat();
+    if(resync) syncAnchors();
   }
   function pinEl(t){
     const c=t.root, b=document.createElement("button");
     b.className="pin"+(isDone(t)?" pin--done":""); b.type="button"; b.dataset.tid=c.id;
-    b.title=(c.author||"Anônimo")+": "+String(c.body||"").slice(0,90);
+    const a=anchorOf(c);
+    b.title=(a?ctxLabel(a)+" — ":"")+(c.author||"Anônimo")+": "+String(c.body||"").slice(0,90);
     const ini=document.createElement("span"); ini.className="pin-ini"; ini.textContent=initial(c.author); b.appendChild(ini);
     if(t.replies.length){ const n=document.createElement("i"); n.className="pin-n"; n.textContent=t.replies.length+1; b.appendChild(n); }
     b.addEventListener("mousedown",e=>e.stopPropagation());
@@ -298,7 +392,7 @@
     document.body.classList.toggle("cmt-mode",on);
     $("cmtTool").classList.toggle("is-on",on);
     $("cmtHint").hidden=!on; catchEl.hidden=!on;
-    if(!on) closeBubble();
+    if(!on){ closeBubble(); post({ type:"hoverEnd" }); }
   }
   $("cmtTool").addEventListener("click",()=>setCommentMode(!state.commentMode));
 
@@ -325,7 +419,18 @@
     e.preventDefault();
     const unit = e.deltaMode===1 ? 40 : e.deltaMode===2 ? state.vh : 1;
     post({ type:"scrollBy", dy:(e.deltaY*unit)/state.scale });
+    setTimeout(()=>{ if(lastHover) post(Object.assign({ type:"hover" },lastHover)); },60);
   },{ passive:false });
+
+  // Destaque do componente sob o mouse, como a seleção de camadas do Figma.
+  let lastHover=null, hoverTimer=0;
+  const sitePoint=(e)=>{ const r=catchEl.getBoundingClientRect(); return { x:(e.clientX-r.left)/state.scale, y:(e.clientY-r.top)/state.scale }; };
+  catchEl.addEventListener("pointermove",(e)=>{
+    if(!state.commentMode || catchEl.hasPointerCapture(e.pointerId) || !bubble.hidden) return;
+    lastHover=sitePoint(e);
+    if(!hoverTimer) hoverTimer=setTimeout(()=>{ hoverTimer=0; if(lastHover) post(Object.assign({ type:"hover" },lastHover)); },40);
+  });
+  catchEl.addEventListener("pointerleave",()=>{ lastHover=null; post({ type:"hoverEnd" }); });
 
   (function wireAreaSelection(){
     let drag=null;
@@ -337,7 +442,7 @@
     const clear=()=>{ if(drag){ drag.rect.remove(); drag=null; } };
     catchEl.addEventListener("pointerdown",(e)=>{
       if(!state.commentMode || e.button!==0 || !e.isPrimary) return;
-      e.preventDefault(); closeBubble();
+      e.preventDefault(); closeBubble(); post({ type:"hoverEnd" });
       const rect=document.createElement("div"); rect.className="comment-area area-draft"; pinsEl.appendChild(rect);
       drag={ id:e.pointerId, start:point(e), cx:e.clientX, cy:e.clientY, rect };
       catchEl.setPointerCapture(e.pointerId);
@@ -349,7 +454,7 @@
       Object.assign(drag.rect.style,{ left:Math.min(a.x,p.x)*100+"%", top:Math.min(a.y,p.y)+"px",
         width:Math.abs(a.x-p.x)*100+"%", height:Math.abs(a.y-p.y)+"px" });
     });
-    catchEl.addEventListener("pointerup",(e)=>{
+    catchEl.addEventListener("pointerup",async(e)=>{
       if(!drag || drag.id!==e.pointerId) return;
       e.preventDefault();
       const d=drag, p=point(e); drag=null;
@@ -358,7 +463,17 @@
       if(!isArea) d.rect.remove();
       const x=isArea?Math.min(p.x,d.start.x):d.start.x, y=isArea?Math.min(p.y,d.start.y):d.start.y;
       const r=catchEl.getBoundingClientRect();
-      openComposer(x, y, r.left+x*r.width, r.top+(y-state.lp.scrollY)*state.scale, isArea?{ w, h:hPx/H_SCALE }:null);
+      // O componente no canto de referência (ponto clicado ou canto superior esquerdo da área).
+      const devW=DEVICES[state.device].w, vx=x*devW, vy=y-state.lp.scrollY;
+      let anchor=await pick(vx,vy);
+      if(anchor){
+        const { ew, eh, ...rest }=anchor; anchor=rest;
+        if(isArea) anchor.area={ fw:(w*devW)/Math.max(1,ew), fh:hPx/Math.max(1,eh), doc:{ w, h:hPx } };
+        if(isArea){ anchor.fw=anchor.area.fw; anchor.fh=anchor.area.fh; }
+      }else if(isArea){
+        anchor=null;
+      }
+      openComposer(x, y, r.left+x*r.width, r.top+(y-state.lp.scrollY)*state.scale, isArea?{ w, hPx }:null, anchor);
     });
     catchEl.addEventListener("pointercancel",clear);
     catchEl.addEventListener("lostpointercapture",()=>{ if(drag) clear(); });
@@ -433,12 +548,13 @@
     return (Array.isArray(photos)?photos:[]).map(safePhotoUrl).filter(Boolean).map(url=>`<img src="${VX.esc(url)}" alt="Imagem anexada" loading="lazy">`).join("");
   }
 
-  function openComposer(x,y,cx,cy,area=null){
+  function openComposer(x,y,cx,cy,area=null,anchor=null){
     const pageIndex=pageKey(state.pageIdx,state.device);
     bubble.innerHTML="";
     const box=document.createElement("div"); box.className="bubble-box";
     box.innerHTML=`
       <div class="bubble-head"><b>Novo comentário</b><button class="bubble-x" type="button">✕</button></div>
+      ${anchor?`<div class="lp-ctx" title="O comentário acompanha este componente">${VX.esc(ctxLabel(anchor))}</div>`:""}
       ${identityHtml()}
       <textarea class="b-text" placeholder="Escreva a correção ou observação…"></textarea>
       <div class="b-thumbs"></div>
@@ -459,8 +575,10 @@
       const urls=[]; let saved=false;
       try{
         for(const f of attachments.files) urls.push(await VX.uploadPhoto(state.id,f));
+        // Área: guardada na âncora (sem depender das colunas w/h); sem âncora, nas colunas.
+        const meta = anchor ? { [META]:anchor } : (area ? { [META]:{ sel:"", area:{ doc:{ w:area.w, h:area.hPx } } } } : null);
         const res=await VX.addComment({ mockup_id:state.id, page_index:pageIndex, x, y:Math.round(y),
-          author:who, body, photos:urls, ...(area?{ w:area.w, h:area.h }:{}) });
+          author:who, body, photos: meta ? [...urls, meta] : urls });
         saved=true;
         closeBubble(); setCommentMode(false);
         await loadComments();
@@ -497,6 +615,8 @@
         <button class="bubble-x" type="button" aria-label="Fechar">✕</button>
       </div>
       ${isDone(t)?'<div class="th-badge">Entregue</div>':""}
+      ${anchorOf(c)?`<div class="lp-ctx">${VX.esc(ctxLabel(anchorOf(c)))}</div>`:""}
+      ${anchorEl && anchorEl.hint?`<div class="lp-hint">${anchorEl.hint}</div>`:""}
       ${c.body?`<div class="b-body">${VX.esc(c.body)}</div>`:""}
       ${photos?`<div class="b-photos">${photos}</div>`:""}
       ${replies?`<div class="th-replies">${replies}</div>`:""}
@@ -575,6 +695,7 @@
           <span class="who-right"><time>${VX.fmtDate(c.created_at)}</time>
           <button class="card-done${isDone(t)?" is-done":""}" type="button" title="${isDone(t)?"Reabrir":"Marcar como entregue"}">✓</button></span></div>
         <div class="cmt-where">${c.x==null||c.y==null?"Sem marcador · ":""}${whereLabel(c)}${nr}</div>
+        ${anchorOf(c)?`<div class="cmt-where lp-ctx-line">${VX.esc(ctxLabel(anchorOf(c)))}</div>`:""}
         ${c.body?`<div class="body">${VX.esc(c.body)}</div>`:""}`;
       card.querySelector(".card-done").addEventListener("click",async(e)=>{
         e.stopPropagation();
@@ -596,15 +717,20 @@
     if(k.device!==state.device) setDevice(k.device);
     if(k.idx!==state.pageIdx && k.idx<state.pages.length) loadPage(k.idx);
     await waitReady();
-    if(c.y!=null) post({ type:"scrollTo", y:Math.max(0, c.y - state.vh*0.3) });
-    setTimeout(()=>{
+    const a=anchorOf(c);
+    let shown=true;
+    if(a && a.sel){
       renderPins();
+      shown=await reveal(c.id);           // reabre o popup / leva o carrossel até o card
+    }else if(c.y!=null) post({ type:"scrollTo", y:Math.max(0, c.y - state.vh*0.3) });
+    setTimeout(()=>{
+      if(!(a && a.sel)) renderPins();
       const t=threads().find(x=>x.root.id===c.id); if(!t) return;
       const pin=document.querySelector(`.pin[data-tid="${c.id}"]`);
-      if(pin && !state.hideMarks){ openThread(t,pin); return; }
+      if(pin && !pin.hidden && !pin.closest("[hidden]") && !state.hideMarks){ openThread(t,pin); return; }
       const r=stage.getBoundingClientRect();
-      openThread(t,{ getBoundingClientRect:()=>({ right:r.left+r.width/2, top:r.top+r.height/3 }) });
-    },450);
+      openThread(t,{ hint: a && !shown ? revealHint(a) : "", getBoundingClientRect:()=>({ right:r.left+r.width/2, top:r.top+r.height/3 }) });
+    },a && a.sel ? 350 : 450);
   }
   function openDrawer(){ drawer.classList.add("show"); drawerBg.classList.add("show"); }
   function closeDrawer(){ drawer.classList.remove("show"); drawerBg.classList.remove("show"); }
