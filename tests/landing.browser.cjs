@@ -147,8 +147,11 @@ const metaOf=c=>(c.photos.find(p=>p&&typeof p==='object'&&p.vx_lp)||{}).vx_lp;
       await page.locator('#cmtTool').click();
       const g=await toGrid(inDlg);
       await page.mouse.move(g.x,g.y); await page.waitForTimeout(250);
-      const label=await frame.evaluate(()=>{const o=[...document.documentElement.children].find(e=>e.getAttribute&&e.getAttribute('aria-hidden')==='true'&&e.style.zIndex==='2147483647');return o&&o.style.display!=='none'?o.textContent:'';});
+      const label=await frame.evaluate(()=>{const o=document.querySelector('[data-vx-outline]');return o&&o.style.display!=='none'?o.textContent:'';});
       assert.match(label,/^Popup/,'destaque do componente: '+label);
+      // o contorno precisa estar dentro do dialog aberto (camada superior), senão fica escondido atrás
+      assert.equal(await frame.evaluate(()=>document.querySelector('[data-vx-outline]').parentElement.localName),'dialog');
+      if(SHOTS) await page.screenshot({path:path.join(SHOTS,'anchor-hover.jpg'),quality:60});
       await page.mouse.click(g.x,g.y);
       await page.waitForSelector('.bubble .lp-ctx');
       assert.match(await page.locator('.bubble .lp-ctx').textContent(),/Popup/);

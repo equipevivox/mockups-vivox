@@ -276,15 +276,21 @@
     if (!el) { hideOutline(); return; }
     if (!outline) {
       outline = document.createElement("div");
-      outline.setAttribute("aria-hidden", "true");
+      outline.setAttribute("aria-hidden", "true"); outline.dataset.vxOutline = "1";
       outline.style.cssText = "position:fixed;z-index:2147483647;pointer-events:none;border:2px solid #CCB691;border-radius:4px;background:rgba(204,182,145,.10);box-shadow:0 0 0 1px rgba(0,0,0,.35);transition:all .08s ease-out;box-sizing:border-box";
       outlineLabel = document.createElement("div");
       outlineLabel.style.cssText = "position:absolute;left:-2px;bottom:100%;margin-bottom:3px;background:#CCB691;color:#1b1a13;font:700 11px/1.2 Inter,system-ui,sans-serif;padding:3px 7px;border-radius:4px;white-space:nowrap;max-width:320px;overflow:hidden;text-overflow:ellipsis";
       outline.appendChild(outlineLabel);
-      document.documentElement.appendChild(outline);
     }
+    // Popups abertos com showModal()/popover ficam na camada superior do navegador, acima de
+    // qualquer z-index: o contorno precisa ficar dentro deles para aparecer.
+    let host = document.documentElement;
+    try{ host = el.closest("dialog[open], :popover-open") || host; }catch(e){ host = el.closest("dialog[open]") || host; }
+    if (outline.parentNode !== host) host.appendChild(outline);
     const r = el.getBoundingClientRect(), ctx = context(el);
-    Object.assign(outline.style, { display:"block", left:r.left + "px", top:r.top + "px", width:r.width + "px", height:r.height + "px" });
+    let ox = 0, oy = 0; // dentro de um popup com transform, "fixed" é relativo a ele
+    if (host !== document.documentElement && getComputedStyle(host).transform !== "none") { const hr = host.getBoundingClientRect(); ox = hr.left; oy = hr.top; }
+    Object.assign(outline.style, { display:"block", left:(r.left - ox) + "px", top:(r.top - oy) + "px", width:r.width + "px", height:r.height + "px" });
     const where = ctx ? (ctx.kind === "popup" ? "Popup" : "Carrossel") + (ctx.name ? " · " + ctx.name : "") + " › " : "";
     outlineLabel.textContent = where + (ctx && ctx.item ? "card " + ctx.item + " › " : "") + describe(el);
     outlineLabel.style.top = r.top < 22 ? "100%" : "";

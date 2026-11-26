@@ -8,6 +8,8 @@
 
 **Verificações:** 25 testes Node; `tests/landing.browser.cjs` contra a LP real: popup do certificado (pin visível aberto, some ao fechar, reabre pelo selo), popup compartilhado dos cards (reabre o detalhe do mesmo card), carrossel “Áreas de atuação” (pin acompanha o card 1184→855 px, some fora do recorte, volta ao ir ao comentário).
 
+**Correção na conferência em produção:** com o popup aberto por `showModal()`, o contorno do componente ficava atrás (camada superior do navegador); agora ele é inserido dentro do `dialog`/popover aberto, e o teste confere isso.
+
 **Pendências:** validar com o usuário em produção; a faixa de depoimentos em movimento contínuo não é “parada” para mostrar o card.
 
 ## 2026-11-26 — Landing pages ao vivo no grid (protótipo com a LP do Dr. João)

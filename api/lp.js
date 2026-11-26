@@ -138,7 +138,7 @@ module.exports = async function handler(req, res) {
     const finalUrl = publicHttpUrl(page.final) ? page.final : target.href;
     const proto = (req.headers["x-forwarded-proto"] || "https").split(",")[0];
     const host = req.headers["x-forwarded-host"] || req.headers.host;
-    const reviewSrc = `${host && /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host) ? "http" : proto}://${host}/lp-review.js?v=20261126-2&m=${slug}`;
+    const reviewSrc = `${host && /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host) ? "http" : proto}://${host}/lp-review.js?v=20261126-3&m=${slug}`;
     return send(res, page.status === 404 ? 404 : 200, injectReview(page.html, finalUrl, reviewSrc), {
       "Content-Type": "text/html; charset=utf-8",
       "Content-Security-Policy": SANDBOX,
