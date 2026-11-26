@@ -315,3 +315,30 @@ body.cmt-mode #flipbook.slide-deck{touch-action:none}
 
 .type-options--4{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media(max-width:560px){.type-options--4{grid-template-columns:1fr}}
+
+/* Landing pages: capa horizontal (16:10), sem lombada; revisão ao vivo em lp.html. */
+.pf-type--landing{color:#f5c6e8;background:rgba(236,121,196,.12);border-color:rgba(236,121,196,.35)}
+.pf-card--landing .pm-obj{aspect-ratio:16/10}
+.pf-card--landing .pm-cover{background-size:cover;background-position:top center;background-repeat:no-repeat}
+.pf-card--landing .pm-spine,.pf-card--landing .pm-edge{display:none}
+.admin-page .card--landing .adm-thumb{height:auto;aspect-ratio:16/10;background-size:cover;background-position:top center}
+.type-options--5 .type-opt--wide{grid-column:1/-1}
+@media(min-width:561px){
+  .type-options--5 .type-opt--wide{display:grid;grid-template-columns:44px 1fr;column-gap:14px;row-gap:4px;align-items:center}
+  .type-options--5 .type-opt--wide .type-ic{grid-row:1/3}
+}
+.lp-modal{width:min(640px,94vw);max-height:92dvh;overflow-y:auto}
+.lp-form{margin-top:18px}
+.lp-url-row{display:flex;gap:8px}
+.lp-url-row input{flex:1;min-width:0}
+.lp-url-row .btn{flex:0 0 auto}
+.lp-rows{display:flex;flex-direction:column;gap:6px}
+.lp-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 34px;gap:6px}
+.lp-row input{width:100%;background:rgba(0,0,0,.28);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:9px 11px;font:inherit;font-size:13px;outline:none}
+.lp-row input:focus{border-color:var(--gold)}
+.lp-row button{border:1px solid var(--border);background:none;color:var(--text-dim);border-radius:9px;cursor:pointer;font-size:15px}
+.lp-row button:hover{color:#ffb4a8;border-color:rgba(211,3,3,.45)}
+.lp-add-row{margin-top:8px}
+.lp-help{display:block;margin-top:6px;font-size:11.5px;color:var(--text-faint);line-height:1.45}
+.lp-form input[type=file]{font:inherit;font-size:12.5px;color:var(--text-dim)}
+@media(max-width:560px){.lp-row{grid-template-columns:1fr 34px}.lp-row input[data-k=title]{grid-column:1/-1}}

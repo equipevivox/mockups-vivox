@@ -28,7 +28,7 @@
   function card(m){
     const a = document.createElement("a");
     a.className = "pf-card pf-card--"+m.type;
-    a.href = window.VX.viewerUrl(m.id);
+    a.href = window.VX.viewerUrl(m.id,false,m.type);
     a.innerHTML = `
       <div class="pm">
         <div class="pm-obj">
@@ -41,7 +41,7 @@
       <div class="pf-meta">
         <span class="pf-type pf-type--${m.type}">${TYPE_LABEL[m.type]}</span>
         <span class="pf-name">${esc(m.name||m.id).replace(/\.pdf$/i,"")}</span>
-        <span class="pf-pages">${m.num_pages||0} página${(m.num_pages===1)?"":"s"}</span>
+        <span class="pf-pages">${m.num_pages||0} página${(m.num_pages===1)?"":"s"}${m.type==="landing"?" · site ao vivo":""}</span>
       </div>`;
     a.querySelector(".pm-cover").style.backgroundImage=`url("${coverUrl(m)}")`;
     return a;

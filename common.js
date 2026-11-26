@@ -9,15 +9,18 @@ window.VX = (function(){
   const publicUrl = (path)=>`${cfg.SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
   const pageUrl = (slug,i,version)=>publicUrl(`${slug}/pages/${i}.jpg`)
     +(version ? "?cacheNonce="+encodeURIComponent(version) : "");
-  function viewerUrl(slug, comentar=false){
+  // Landing pages abrem na revisão ao vivo (/lp/SLUG); os demais tipos no visualizador (/m/SLUG).
+  function viewerUrl(slug, comentar=false, type){
     const local=["localhost","127.0.0.1","[::1]"].includes(window.location.hostname);
     const encoded=encodeURIComponent(slug);
-    return (local?"/viewer.html?m="+encoded:"/m/"+encoded)+(comentar?(local?"&":"?")+"comment=1":"");
+    const landing=type==="landing";
+    const base=local ? (landing?"/lp.html?m=":"/viewer.html?m=")+encoded : (landing?"/lp/":"/m/")+encoded;
+    return base+(comentar?(local?"&":"?")+"comment=1":"");
   }
   const esc = (s)=>(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
-  const TYPE_LABEL = { revista:"Revista", mockup:"Mockup", folder:"Folder", apresentacao:"Apresentação" };
-  const normType = (t)=> (t==="mockup"||t==="folder"||t==="apresentacao") ? t : "revista";
+  const TYPE_LABEL = { revista:"Revista", mockup:"Mockup", folder:"Folder", apresentacao:"Apresentação", landing:"Landing Page" };
+  const normType = (t)=> (t==="mockup"||t==="folder"||t==="apresentacao"||t==="landing") ? t : "revista";
 
   // slug do nome do arquivo: MAIÚSCULAS, sem acento, espaços -> "_"
   function makeSlug(name){
@@ -89,6 +92,46 @@ window.VX = (function(){
     return data;
   }
 
+  // ---- landing pages: endereço e páginas ficam em {slug}/landing.json no Storage ----
+  function normalizeLandingUrl(value){
+    let raw=String(value||"").trim();
+    if(raw && !/^https?:\/\//i.test(raw)) raw="https://"+raw;
+    let u; try{ u=new URL(raw); }catch(e){ throw new Error("Informe o endereço completo da landing page, ex.: https://site.com.br/"); }
+    if(!["http:","https:"].includes(u.protocol) || !u.hostname.includes(".")) throw new Error("Use um endereço público começando com https://");
+    return u.origin+"/";
+  }
+  function normalizeLandingPages(list){
+    const seen=new Set(), out=[];
+    (Array.isArray(list)?list:[]).forEach(p=>{
+      let path=String(p&&p.path||"").trim();
+      if(!path) return;
+      try{ const u=new URL(path,"https://x.invalid"); path=u.pathname||"/"; }catch(e){ return; }
+      if(!path.startsWith("/")) path="/"+path;
+      if(seen.has(path)) return; seen.add(path);
+      const title=String(p.title||"").trim().replace(/\s+/g," ").slice(0,80);
+      out.push({ path, title: title || (path==="/"?"Home":path) });
+    });
+    return out.slice(0,40);
+  }
+  async function landingConfig(slug){
+    const r=await fetch(publicUrl(`${slug}/landing.json`)+"?t="+Date.now(),{ cache:"no-store" });
+    if(!r.ok) return null;
+    const data=await r.json().catch(()=>null);
+    if(!data) return null;
+    try{ return { url:normalizeLandingUrl(data.url), pages:normalizeLandingPages(data.pages) }; }
+    catch(e){ return null; }
+  }
+  async function saveLandingConfig(slug, cfg){
+    const body=JSON.stringify({ url:normalizeLandingUrl(cfg.url), pages:normalizeLandingPages(cfg.pages), updated_at:new Date().toISOString() });
+    const put=(type)=>sb.storage.from(BUCKET).upload(`${slug}/landing.json`, new Blob([body],{type}),
+      { contentType:type, upsert:true, cacheControl:"60" });
+    let { error } = await put("application/json");
+    // O bucket aceita só imagens: o JSON vai rotulado como image/png (o conteúdo continua sendo
+    // texto JSON e é lido com fetch().json()). Liberar application/json no bucket dispensa isso.
+    if(error && /mime type/i.test(String(error.message||""))) ({ error } = await put("image/png"));
+    if(error) throw error;
+  }
+
   // ---- comentários ----
   async function listComments(mockupId){
     const { data, error } = await sb.from("comments").select("*").eq("mockup_id",mockupId)
@@ -142,5 +185,6 @@ window.VX = (function(){
 
   return { cfg, BUCKET, sb, $, publicUrl, pageUrl, viewerUrl, esc, toast, fmtDate, nextFrame, preloadImages,
            makeSlug, TYPE_LABEL, normType, listMockups, listPublicMockups, notifyMaterialsChanged, getMockup, normalizeMaterialName, renameMockup,
-           listComments, addComment, addReply, setResolved, deleteComment, uploadPhoto, removePhotos };
+           listComments, addComment, addReply, setResolved, deleteComment, uploadPhoto, removePhotos,
+           normalizeLandingUrl, normalizeLandingPages, landingConfig, saveLandingConfig };
 })();

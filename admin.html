@@ -13,7 +13,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <link rel="stylesheet" href="/style.css" />
-<link rel="stylesheet" href="/ui.css?v=20261110-4" />
+<link rel="stylesheet" href="/ui.css?v=20261126-1" />
 <link rel="stylesheet" href="/assets/identity.css?v=20260909-4" />
 <script src="/assets/brand.js?v=20260909-4" defer></script>
 </head>
@@ -52,7 +52,7 @@
         <a class="btn" href="/portfolio" target="_blank" rel="noopener">Ver portfólio</a>
         <button class="btn btn-gold" id="uploadBtn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Enviar PDF
+          Enviar material
         </button>
         <button class="btn" id="logoutBtn">Sair</button>
       </div>
@@ -93,8 +93,8 @@ alter table public.comments add column if not exists parent_id  uuid references 
   <div class="type-modal" id="typeModal" role="dialog" aria-modal="true">
     <button class="type-close" id="typeClose" aria-label="Fechar">✕</button>
     <h2>O que você está enviando?</h2>
-    <p class="type-file"><span id="typeFileName">arquivo.pdf</span></p>
-    <div class="type-options type-options--4">
+    <p class="type-file"><span id="typeFileName">Escolha o tipo. Para PDFs, o arquivo é pedido em seguida.</span></p>
+    <div class="type-options type-options--4 type-options--5">
       <button class="type-opt" data-type="revista">
         <span class="type-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>
         <span class="type-name">Revista</span>
@@ -118,7 +118,35 @@ alter table public.comments add column if not exists parent_id  uuid references 
         <span class="type-name">Folder</span>
         <span class="type-desc">Tri-fold 3D. PDF com 2 páginas: frente e verso.</span>
       </button>
+      <button class="type-opt type-opt--wide" data-type="landing">
+        <span class="type-badge">Site ao vivo</span>
+        <span class="type-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3.5" width="19" height="17" rx="2"/><path d="M2.5 8h19"/><path d="M5.5 5.75h.01M8 5.75h.01"/><rect x="6" y="11" width="12" height="4" rx="1"/><path d="M6 18h7"/></svg></span>
+        <span class="type-name">Landing Page</span>
+        <span class="type-desc">Site publicado, com várias páginas. Carrossel, 3D e popups funcionando; comentários no computador e no celular.</span>
+      </button>
     </div>
+  </div>
+
+  <!-- ===== MODAL: landing page ===== -->
+  <div class="type-backdrop" id="lpBackdrop"></div>
+  <div class="type-modal lp-modal" id="lpModal" role="dialog" aria-modal="true" aria-labelledby="lpModalTitle">
+    <button class="type-close" id="lpClose" type="button" aria-label="Fechar">✕</button>
+    <h2 id="lpModalTitle">Landing Page</h2>
+    <p class="type-file"><span>O site original não é alterado: a revisão abre uma cópia ao vivo pelo grid.</span></p>
+    <form id="lpForm" class="lp-form" novalidate>
+      <div class="field"><label for="lpUrl">Endereço do site</label>
+        <div class="lp-url-row"><input id="lpUrl" type="url" inputmode="url" placeholder="https://site.com.br/" autocomplete="off" required />
+        <button class="btn" type="button" id="lpDiscover">Buscar páginas</button></div></div>
+      <div class="field"><label for="lpName">Nome exibido</label><input id="lpName" type="text" maxlength="120" placeholder="Ex.: LP Dr. João Márdio" autocomplete="off" required /></div>
+      <div class="field"><label>Páginas</label>
+        <div class="lp-rows" id="lpRows"></div>
+        <button class="btn lp-add-row" type="button" id="lpAddRow">+ Adicionar página</button></div>
+      <div class="field"><label for="lpCover">Capa (opcional)</label>
+        <input id="lpCover" type="file" accept="image/*" />
+        <small class="lp-help">Um print do topo do site. Aparece no portfólio e no painel; sem capa, o cartão fica sem imagem.</small></div>
+      <p class="rename-error" id="lpError" role="alert"></p>
+      <div class="rename-actions"><button class="btn btn-gold" type="submit" id="lpSave">Salvar landing page</button><button class="btn" type="button" id="lpCancel">Cancelar</button></div>
+    </form>
   </div>
 
   <div class="loader-wrap" id="loader">
@@ -134,7 +162,7 @@ alter table public.comments add column if not exists parent_id  uuid references 
   <div class="toast" id="toast"></div>
 
   <script src="/config.js"></script>
-  <script src="/common.js?v=20261110-2"></script>
-  <script src="/admin.js?v=20261110-2"></script>
+  <script src="/common.js?v=20261126-1"></script>
+  <script src="/admin.js?v=20261126-1"></script>
 </body>
 </html>

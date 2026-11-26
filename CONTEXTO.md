@@ -1,6 +1,16 @@
 # Contexto atual — Mockups VIVOX
 
-Última atualização: 2026-11-10 (America/Cuiaba).
+Última atualização: 2026-11-26 (America/Cuiaba).
+
+## Landing pages ao vivo (2026-11-26)
+
+- Novo tipo `landing` (“Landing Page”, ícone de janela de navegador): **Enviar material** abre primeiro a escolha do tipo; PDFs pedem o arquivo depois, landing page abre formulário (endereço, Buscar páginas, nome, lista editável, capa opcional). Cartão tem **Editar páginas**.
+- Revisão em `/lp/SLUG` (`lp.html/lp.js/lp.css`): site ao vivo pelo proxy `api/lp.js` + `lp-review.js` injetado só na cópia; lista de páginas, Computador 1440 / Celular 390, Visão geral lado a lado, comentários com ponto/área, respostas, anexos, entregues. `/m/SLUG` de uma landing redireciona.
+- Protótipo criado: `LP_DR_JOAO_MARDIO` (“LP Dr. João Márdio”, 5 páginas, privado, capa = print do topo). Carrossel, popups, links internos e o modelo 3D funcionam pela revisão.
+- Sem migração: config em `{slug}/landing.json` (rotulado `image/png` porque o bucket só aceita imagens); comentários em `page_index`/`x`/`y` existentes (ver README). O banco aceitou `type = landing` (teste com linha temporária, removida).
+- Verificado: 25 testes Node; `tests/landing.browser.cjs` no Chrome 1440×1000 e 390×844 contra a LP real (rolagem, gravação simulada com y correto, navegação interna, celular, visão geral); carga real de `LP_DR_JOAO_MARDIO` e formulário do painel localmente.
+- Limitações: comentário por área continua dependendo da migração `w/h`; sites com anti-robô/login podem não abrir; `fetch` acima de 4 MB pelo proxy falha; o estado de carrossel/popup não é reaberto ao ir a um comentário; `lp.js` duplica a UI de comentários do `viewer.js` (unificar depois).
+- Próximos passos: validar em produção com o usuário; liberar `application/json` no bucket (ou coluna `site jsonb`); recorte de print junto do comentário.
 
 ## Apresentações, comentário por área e anexos (2026-11-10)
 

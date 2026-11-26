@@ -49,6 +49,12 @@ O worker **precisa ser same-origin** (`/pdf.worker.min.js`, versionado no repo).
 - **Nunca ligue `cleanUrls: true`** no `vercel.json` — anula os `rewrites` e as rotas `/portfolio` e `/m/:slug` passam a dar 404.
 - Em `viewer.html`, todo asset precisa de **caminho absoluto** (`/common.js`, `/lib/turn.min.js`). Relativo resolve para `/m/...` e quebra.
 
+### Landing pages (proxy de revisão)
+- A LP abre por `/api/lp`, com `<base href>` do site original. Em `lp-review.js`, **não remova** o tradutor de `history.pushState/replaceState` (sem ele o Next.js mostra “This page couldn't load”) nem o repasse de `fetch`/XHR pelo proxy (sem ele o modelo 3D é bloqueado por CORS na origem opaca).
+- Mantenha `Content-Security-Policy: sandbox` nas respostas do proxy e o endereço vindo só de `{slug}/landing.json`: a cópia roda código de terceiros.
+- O iframe tem URL reescrita pelo script; em testes, localize-o pelo elemento `#lpFrame`, não pela URL.
+- O bucket `mockups` recusa `application/json`; `VX.saveLandingConfig` reenvia como `image/png`. Comentários de LP usam `page_index = página × 2 + dispositivo` e `y` em px — não converta para 0..1.
+
 ### Geral
 - Evite `requestAnimationFrame` no caminho crítico de carregamento: ele não dispara em aba não renderizada. Use o helper `VX.nextFrame()`, que tem fallback por `setTimeout`.
 - Deleção no Storage do Supabase só pela **Storage API** (`sb.storage.remove()`). SQL direto em `storage.objects` é bloqueado pelo trigger `protect_delete`.

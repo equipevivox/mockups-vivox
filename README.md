@@ -33,7 +33,9 @@ Ao concluir cada tarefa relevante, o agente deve atualizar esses arquivos, criar
 |---|---|---|
 | `/` e `/portfolio` | `index.html` | Portfólio público — só materiais com `is_public = true` |
 | `/admin` | `admin.html` | Login, envio de PDF, renomear, publicar no portfólio, abrir/comentar/excluir |
-| `/m/:slug` | `viewer.html` | Visualização do material + comentários |
+| `/m/:slug` | `viewer.html` | Visualização do material + comentários (landing pages são redirecionadas para `/lp/:slug`) |
+| `/lp/:slug` | `lp.html` | Revisão de landing page: site ao vivo, páginas, computador/celular e comentários |
+| `/api/lp` | `api/lp.js` | Função da Vercel: proxy de revisão das landing pages (sem build e sem dependências) |
 
 As rotas limpas vêm de `vercel.json` (`rewrites`).
 
@@ -58,6 +60,7 @@ No painel, use **Renomear → Nome exibido → Salvar nome** em cada material pa
 | **Mockup** | **Só A4 retrato** (aspect ≈ 1.4142, tolerância 0.03) | 1 página centralizada |
 | **Folder** | PDF com **exatamente 2 páginas** (frente e verso) | Tri-fold 3D: cada spread é cortado em 3 painéis; gira arrastando, clique abre/fecha |
 | **Apresentação** | Primeira página horizontal 16:9 (altura/largura 0.5625, tolerância 0.03) | Um slide por vez, ajustado à área, com comentários e tela cheia quando suportada |
+| **Landing Page** | Endereço público do site + lista de páginas (sem PDF) | Site ao vivo em `/lp/SLUG`, com lista de páginas, computador (1440px) ou celular (390px), visão geral lado a lado e comentários |
 
 Apresentações são renderizadas em JPEG com largura de 1920px (1080px de altura para 16:9 exato). O tipo salvo é `apresentacao`; os demais tipos mantêm a renderização anterior. O botão de tela cheia está disponível em todos os tipos quando a Fullscreen API é suportada. Balões, lista de comentários e rascunhos permanecem disponíveis nesse modo.
 
@@ -66,6 +69,20 @@ A apresentação usa slides sobrepostos com somente a página atual visível, se
 O corte do folder usa `background-size: 300% 100%` + `background-position` em `0% / 50% / 100%`.
 
 ---
+
+## Landing pages (site ao vivo)
+
+No painel, **Enviar material → Landing Page** abre o formulário: endereço do site, **Buscar páginas** (lê os links internos da home pelo proxy), nome exibido, lista de páginas editável e capa opcional (print do topo, recortado em 16:10 e salvo como `pages/0.jpg`). **Editar páginas** no cartão altera endereço e lista depois. O site original não é alterado.
+
+Como funciona a revisão:
+
+- `lp.html` carrega a página em um iframe a partir de `/api/lp?m=SLUG&p=/caminho/`. O proxy busca o HTML original, injeta `<base href>` com o endereço real (todos os arquivos continuam vindo do site original) e o script `/lp-review.js`. A cópia é servida com `Content-Security-Policy: sandbox` (origem opaca): o código da LP não acessa o domínio do grid.
+- O endereço vem sempre de `{slug}/landing.json` no Storage, nunca da requisição; o proxy recusa endereços internos (localhost, IPs, hosts sem domínio).
+- `lp-review.js` informa ao grid, por `postMessage`, a página, a rolagem e a altura do documento; recebe pedidos de rolagem. Links internos voltam para o grid (trocam a página da lista); links externos abrem em nova aba.
+- Ajustes necessários para sites em Next.js (como a LP do Dr. João): o script traduz para o grid os endereços que o framework grava no histórico (sem isso o Next mostra “This page couldn't load”) e repassa pelo proxy (`/api/lp?m=SLUG&a=/arquivo`, com CORS liberado, até 4 MB) os `fetch`/XHR da LP ao próprio domínio, como o modelo 3D `.glb`.
+- Comentários: no modo **Comentar**, uma camada transparente cobre o site (a roda do mouse continua rolando); clique cria ponto, arrastar cria área. Os pins ficam em `.lp-doc`, que acompanha a rolagem. Gravação sem migração: `page_index = página × 2 + dispositivo` (0 computador, 1 celular), `x` relativo à largura, `y` em px do documento, `w` relativo e `h` = px ÷ 10000 (a constraint limita `h` a 0..1). Áreas dependem da mesma migração `w/h` pendente dos PDFs.
+- `landing.json` é texto JSON. O bucket só aceita imagens, então ele é enviado com `Content-Type: image/png` quando `application/json` é recusado; liberar `application/json` no bucket elimina esse contorno sem outra mudança.
+- Localmente, `python -m http.server` não executa `/api/lp`; use `vercel dev` ou o teste `tests/landing.browser.cjs`, que roda a função em processo.
 
 ## Comentários (estilo Figma)
 
@@ -116,7 +133,10 @@ HTML/CSS/JS puro, sem build.
 ```
 index.html  + portfolio.js   portfólio público
 viewer.html + viewer.js      visualização + comentários
-admin.html  + admin.js       painel (login, upload, nomes, publicação)
+admin.html  + admin.js       painel (login, upload, landing pages, nomes, publicação)
+lp.html + lp.js + lp.css     revisão de landing page ao vivo + comentários
+lp-review.js                 script injetado pelo proxy na cópia da landing page
+api/lp.js                    proxy de revisão (função da Vercel, sem dependências)
 theme.js                     preferência claro/escuro compartilhada pelo portfólio e admin
 common.js                    window.VX: cliente Supabase e helpers
 portfolio-background.js     distribuição das capas e movimento do fundo
@@ -131,6 +151,8 @@ assets/vivox-grid.svg         logo original no portfólio e no painel
 assets/vivox-grid-light.svg   mesma logo com letras escuras para o tema claro
 tests/material-name.test.cjs validação de nomes e gravação sem alterar o slug
 tests/portfolio-background.test.cjs posições, respostas atrasadas e movimento
+tests/landing.test.cjs       URLs, páginas, injeção do proxy e bloqueio de endereços internos
+tests/landing.browser.cjs    revisão de LP no Chrome (Playwright; precisa de internet)
 supabase/migrations/          migrações desta aplicação, incluindo versão das capas
 lib/                         jquery 1.7 + turn.min.js
 pdf.worker.min.js            worker do PDF.js (precisa ser same-origin)
@@ -151,7 +173,7 @@ Projeto `kthestvyzvbbpnsulned` (região sa-east-1).
 | `name` | text | nome exibido editável; inicialmente recebe o nome do PDF |
 | `num_pages` | int | |
 | `aspect` | float | altura/largura da página |
-| `type` | text | `revista` \| `mockup` \| `folder` \| `apresentacao` |
+| `type` | text | `revista` \| `mockup` \| `folder` \| `apresentacao` \| `landing` |
 | `is_public` | bool | aparece no portfólio |
 | `cover_version` | uuid | versão de cache das páginas, gerada pelo banco no envio |
 | `expires_at` | timestamptz | não usado (sempre null) |
@@ -168,7 +190,7 @@ Projeto `kthestvyzvbbpnsulned` (região sa-east-1).
 | `resolved` | bool | "entregue" |
 | `parent_id` | uuid | resposta dentro da thread |
 
-**Storage** — bucket `mockups` (público): páginas em `{slug}/pages/{i}.jpg`, fotos em `{slug}/photos/*`.
+**Storage** — bucket `mockups` (público, só aceita tipos de imagem): páginas em `{slug}/pages/{i}.jpg`, fotos em `{slug}/photos/*`, configuração das landing pages em `{slug}/landing.json` (`{url, pages:[{path,title}]}`).
 Guarda **imagens renderizadas**, nunca o PDF original (evita o limite de tamanho e abre sem re-renderizar).
 
 ### Migração (já aplicada em produção)

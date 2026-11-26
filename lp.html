@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>VIVOX · Landing Page</title>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=20260909-4" />
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<link rel="stylesheet" href="/style.css" />
+<link rel="stylesheet" href="/ui.css?v=20261126-1" />
+<link rel="stylesheet" href="/lp.css?v=20261126-1" />
+</head>
+<body class="is-viewer is-lp">
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="vg" x1="16.7" y1="9.2" x2="51.3" y2="58" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#CCB691"/><stop offset="1" stop-color="#876224"/>
+      </linearGradient>
+      <symbol id="vivoxV" viewBox="0 0 55 58">
+        <path d="M7.55687 0H0L5.85818 15.6016L6.07185 14.7968C6.71286 12.3787 7.89518 10.1672 8.30828 7.69576C8.72494 5.19223 8.51128 2.57119 7.6281 0.199427L7.55331 0H7.55687Z" fill="url(#vg)"/>
+        <path d="M43.5214 2.33678e-06L25.5409 48.7849L11.8053 11.5134L11.5952 10.9863L11.3175 11.492C8.66792 16.2747 8.25839 21.9726 10.1921 27.1221C14.0347 37.3499 17.8736 47.5777 21.7126 57.8055H29.3692L51.0783 2.33678e-06H43.5214Z" fill="url(#vg)"/>
+        <circle cx="51.3081" cy="54.6547" r="3.34615" fill="#D30303"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <div class="viewer show lp-viewer" id="viewer">
+    <div class="viewer-top">
+      <div class="viewer-title">
+        <a class="logo" href="/portfolio" title="Voltar ao portfólio"><svg viewBox="0 0 55 58"><use href="#vivoxV"/></svg></a>
+        <span id="docName">…</span>
+        <span class="pf-type pf-type--landing">Landing Page</span>
+      </div>
+      <div class="viewer-actions">
+        <div class="lp-seg" role="group" aria-label="Dispositivo">
+          <button class="lp-seg-btn is-on" type="button" data-device="desktop" aria-pressed="true" title="Computador (1440 px)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            <span class="lbl">Computador</span>
+          </button>
+          <button class="lp-seg-btn" type="button" data-device="mobile" aria-pressed="false" title="Celular (390 px)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></svg>
+            <span class="lbl">Celular</span>
+          </button>
+        </div>
+        <button class="ghost-btn" id="overviewBtn" type="button" aria-pressed="false" title="Ver todas as páginas lado a lado">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          <span class="lbl">Visão geral</span>
+        </button>
+        <button class="ghost-btn cmt-tool" id="cmtTool" type="button" title="Comentar: clique ou arraste sobre a página (C)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span class="lbl">Comentar</span>
+        </button>
+        <button class="ghost-btn" id="hideBtn" type="button" title="Ocultar comentários">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span class="lbl" id="hideLbl">Ocultar</span>
+        </button>
+        <button class="ghost-btn" id="listBtn" type="button" title="Ver comentários">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          <span class="lbl">Comentários</span><span class="cmt-count" id="cmtCount" hidden>0</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="lp-shell">
+      <nav class="lp-pages" id="lpPages" aria-label="Páginas da landing page"></nav>
+
+      <main class="lp-stage" id="lpStage">
+        <div class="lp-device" id="lpDevice">
+          <div class="lp-canvas" id="lpCanvas">
+            <iframe id="lpFrame" title="Landing page em revisão"
+              sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads"
+              referrerpolicy="no-referrer"></iframe>
+            <!-- camada da página: os pins são filhos dela e acompanham a rolagem do site -->
+            <div class="lp-marks" aria-hidden="false"><div class="lp-doc" id="lpDoc"><div class="pins" id="lpPins"></div></div></div>
+            <div class="lp-catch" id="lpCatch" hidden></div>
+          </div>
+        </div>
+        <div class="cmt-hint" id="cmtHint" hidden>Clique ou arraste sobre a página para comentar · role com a roda do mouse · <b>Esc</b> cancela</div>
+        <div class="lp-overview" id="lpOverview" hidden></div>
+      </main>
+    </div>
+
+    <div class="cmt-drawer" id="cmtDrawer">
+      <div class="cmt-drawer-head">
+        <strong>Comentários</strong>
+        <button class="sheet-close" id="drawerClose" aria-label="Fechar">✕</button>
+      </div>
+      <div class="cmt-drawer-body" id="cmtDrawerBody"></div>
+    </div>
+    <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+    <div class="bubble" id="bubble" hidden></div>
+
+    <div class="loader-wrap show" id="loader">
+      <div class="loader-card">
+        <div class="spin"></div>
+        <h3>Carregando landing page…</h3>
+        <p id="loaderSub">Abrindo o site ao vivo</p>
+        <div class="progress"><i id="progressBar"></i></div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <script src="/config.js"></script>
+  <script src="/common.js?v=20261126-1"></script>
+  <script src="/lp.js?v=20261126-1"></script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+/* VIVOX · Revisão de landing pages (lp.html): site ao vivo + camada de comentários */
+
+.lp-shell{flex:1;min-height:0;display:grid;grid-template-columns:220px minmax(0,1fr)}
+
+/* lista de páginas */
+.lp-pages{display:flex;flex-direction:column;gap:4px;padding:8px 10px 16px 16px;overflow-y:auto;min-height:0}
+.lp-pages-title{font-size:10.5px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--text-faint);margin:4px 8px 6px}
+.lp-page{display:flex;align-items:center;gap:9px;width:100%;text-align:left;border:1px solid transparent;background:none;color:var(--text-dim);
+  font:inherit;font-size:13px;font-weight:600;padding:9px 10px;border-radius:10px;cursor:pointer;transition:background .15s,border-color .15s}
+.lp-page:hover{background:rgba(204,182,145,.06)}
+.lp-page.is-on{background:rgba(204,182,145,.12);border-color:var(--border-strong);color:var(--text)}
+.lp-page:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.lp-page-dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;border:1.5px solid var(--gold-muted)}
+.lp-page.is-on .lp-page-dot{background:var(--gold);border-color:var(--gold)}
+.lp-page-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lp-page-n{min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:rgba(204,182,145,.16);color:var(--gold-bright);
+  font-size:10.5px;font-weight:800;display:grid;place-items:center}
+.lp-page-n:empty{display:none}
+.lp-page-path{display:block;font-size:11px;font-weight:500;color:var(--text-faint);overflow:hidden;text-overflow:ellipsis}
+
+/* seletor computador / celular */
+.lp-seg{display:inline-flex;border:1px solid var(--border);border-radius:10px;padding:2px;background:rgba(204,182,145,.04)}
+.lp-seg-btn{display:inline-flex;align-items:center;gap:7px;border:0;background:none;color:var(--gold);font:inherit;font-size:13px;font-weight:600;
+  padding:6px 11px;border-radius:8px;cursor:pointer}
+.lp-seg-btn svg{width:16px;height:16px}
+.lp-seg-btn.is-on{background:var(--gold-grad);color:#1b1a13}
+.lp-seg-btn:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+
+/* palco: o dispositivo é escalado para caber, preservando a largura real do site */
+.lp-stage{position:relative;min-width:0;min-height:0;display:flex;justify-content:center;align-items:flex-start;padding:6px 16px 16px;overflow:hidden}
+.lp-device{position:relative;flex:0 0 auto;border-radius:12px;overflow:hidden;background:#fff;
+  box-shadow:0 0 0 1px var(--border-strong),0 30px 80px -30px rgba(0,0,0,.8)}
+.lp-viewer[data-device="mobile"] .lp-device{border-radius:26px;box-shadow:0 0 0 8px #141410,0 0 0 9px var(--border-strong),0 30px 80px -30px rgba(0,0,0,.8);margin-top:10px}
+.lp-canvas{position:absolute;top:0;left:0;transform-origin:0 0}
+.lp-canvas iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#fff}
+
+/* camada de marcadores: recortada na área visível, deslocada pela rolagem do site */
+.lp-marks{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:3}
+.lp-doc{position:absolute;top:0;left:0;width:100%;will-change:transform}
+.lp-doc .pins{z-index:5}
+.is-lp .pin{transform:translate(-50%,-50%) scale(var(--lp-inv,1))}
+.is-lp .pin:hover{transform:translate(-50%,-50%) scale(calc(var(--lp-inv,1)*1.15))}
+.is-lp .comment-area{border-width:calc(1px*var(--lp-inv,1))}
+
+/* captura de cliques no modo comentário (o site continua visível por baixo) */
+.lp-catch{position:absolute;inset:0;z-index:4;cursor:crosshair;touch-action:none;background:rgba(204,182,145,.035)}
+.lp-catch[hidden]{display:none}
+.lp-stage .cmt-hint{bottom:22px}
+
+/* visão geral: todas as páginas lado a lado, como quadros */
+.lp-overview{position:absolute;inset:0;overflow:auto;padding:12px 24px 40px;display:grid;gap:28px;align-content:start;
+  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));background:transparent;z-index:6}
+.lp-overview[hidden]{display:none}
+.lp-viewer.is-overview .lp-device,.lp-viewer.is-overview .cmt-hint{visibility:hidden}
+.lp-frame-card{display:flex;flex-direction:column;gap:10px;border:0;background:none;padding:0;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.lp-frame-card:focus-visible .lp-thumb{outline:2px solid var(--gold);outline-offset:3px}
+.lp-frame-head{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--text-dim)}
+.lp-frame-head .lp-page-n{margin-left:auto}
+.lp-thumb{position:relative;width:100%;aspect-ratio:var(--thumb-ratio,16/10);border-radius:10px;overflow:hidden;background:#fff;
+  box-shadow:0 0 0 1px var(--border-strong),0 18px 50px -24px rgba(0,0,0,.8);transition:transform .2s,box-shadow .2s}
+.lp-frame-card:hover .lp-thumb{transform:translateY(-3px);box-shadow:0 0 0 1px var(--gold),0 24px 60px -24px rgba(0,0,0,.9)}
+.lp-thumb iframe{position:absolute;top:0;left:0;border:0;transform-origin:0 0;pointer-events:none}
+.lp-overview.is-mobile{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+.lp-overview.is-mobile .lp-thumb{--thumb-ratio:390/760;border-radius:18px}
+
+.cmt-where .lp-dev{display:inline-flex;vertical-align:-2px;margin-right:4px}
+.cmt-where .lp-dev svg{width:13px;height:13px}
+
+@media (max-width:900px){
+  .lp-shell{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}
+  .lp-pages{flex-direction:row;overflow-x:auto;overflow-y:hidden;padding:2px 12px 8px;gap:6px}
+  .lp-pages-title,.lp-page-path{display:none}
+  .lp-page{width:auto;flex:0 0 auto;padding:7px 11px;border-color:var(--border)}
+  .lp-stage{padding:4px 8px 10px}
+}
+@media (max-width:760px){
+  .lp-viewer .viewer-top{flex-wrap:wrap}
+  .lp-viewer .viewer-title{flex-basis:100%;max-width:100%}
+  .lp-viewer .viewer-actions{width:100%;justify-content:space-between}
+  .lp-seg-btn .lbl{display:none}
+}

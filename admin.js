@@ -10,7 +10,7 @@
   if(typeof pdfjsLib!=="undefined") pdfjsLib.GlobalWorkerOptions.workerSrc="/pdf.worker.min.js";
 
   const loader=$("loader"), loaderSub=$("loaderSub"), progressBar=$("progressBar");
-  let pendingFile=null, items=[], counts={};
+  let pendingType=null, items=[], counts={};
 
   async function sha256(str){
     const buf=await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
@@ -66,14 +66,14 @@
     $("cards").innerHTML="";
     items.forEach(m=>{
       const nc=counts[m.id]||0, pub=m.is_public===true;
-      const link=location.origin+VX.viewerUrl(m.id);
+      const link=location.origin+VX.viewerUrl(m.id,false,m.type);
       const card=document.createElement("div"); card.className="card card--adm card--"+m.type;
       card.innerHTML=`
         <div class="adm-thumb" style="background-image:url('${VX.pageUrl(m.id,0,m.cover_version)}')"></div>
         <div class="meta">
           <div class="name"><span class="pf-type pf-type--${m.type}">${VX.TYPE_LABEL[m.type]}</span> <span class="material-name">${VX.esc((m.name||m.id).replace(/\.pdf$/i,""))}</span></div>
           <div class="sub">
-            <span class="pill"><b>${m.num_pages||0}</b> páginas</span>
+            <span class="pill"><b>${m.num_pages||0}</b> página${m.num_pages===1?"":"s"}${m.type==="landing"?" · site ao vivo":""}</span>
             <span class="pill"><b>${nc}</b> comentário${nc===1?"":"s"}</span>
             <span class="pill">Criado: <b>${VX.fmtDate(m.created_at)}</b></span>
           </div>
@@ -86,17 +86,19 @@
           </form>
         </div>
         <div class="acts">
-          <a class="btn" href="${VX.viewerUrl(m.id)}" target="_blank" rel="noopener">Abrir</a>
-          <a class="btn" href="${VX.viewerUrl(m.id,true)}" target="_blank" rel="noopener">Comentar</a>
+          <a class="btn" href="${VX.viewerUrl(m.id,false,m.type)}" target="_blank" rel="noopener">Abrir</a>
+          <a class="btn" href="${VX.viewerUrl(m.id,true,m.type)}" target="_blank" rel="noopener">Comentar</a>
+          ${m.type==="landing"?'<button class="btn" data-act="edit-lp">Editar páginas</button>':""}
           <button class="btn" data-act="copy">Copiar link</button>
           <button class="btn" data-act="rename" aria-expanded="false">Renomear</button>
           <button class="btn btn-danger" data-act="del">Excluir</button>
         </div>`;
       card.querySelector('[data-act="copy"]').addEventListener("click",async()=>{
-        try{ await navigator.clipboard.writeText(link); VX.toast("Link copiado: "+VX.viewerUrl(m.id)); }
+        try{ await navigator.clipboard.writeText(link); VX.toast("Link copiado: "+VX.viewerUrl(m.id,false,m.type)); }
         catch(e){ prompt("Copie o link:",link); }
       });
       card.querySelector('[data-act="del"]').addEventListener("click",()=>del(m));
+      const editLp=card.querySelector('[data-act="edit-lp"]'); if(editLp) editLp.addEventListener("click",()=>openLanding(m));
       card.querySelector('[data-act="pub"]').addEventListener("change",(e)=>togglePublic(m,e.target));
       wireRename(card,m);
       $("cards").appendChild(card);
@@ -174,6 +176,7 @@
     if(!confirm(`Excluir "${m.name||m.id}" e todos os seus comentários e arquivos? Não dá para desfazer.`)) return;
     try{
       await removeFolder(`${m.id}/pages`); await removeFolder(`${m.id}/photos`);
+      if(m.type==="landing") await sb.storage.from(BUCKET).remove([`${m.id}/landing.json`]);
       const { error } = await sb.from("mockups").delete().eq("id", m.id);
       if(error) throw error;
       VX.notifyMaterialsChanged(m.id);
@@ -182,21 +185,146 @@
   }
 
   // ================= upload =================
-  $("uploadBtn").addEventListener("click",()=>$("fileInput").click());
-  $("fileInput").addEventListener("change",(e)=>{
-    const f=e.target.files&&e.target.files[0]; if(f) askType(f); e.target.value="";
-  });
-  function askType(file){
-    if(file.type!=="application/pdf" && !/\.pdf$/i.test(file.name)){ VX.toast("Envie um arquivo PDF."); return; }
-    pendingFile=file; $("typeFileName").textContent=file.name;
+  // Primeiro o tipo; PDFs pedem o arquivo em seguida, landing pages abrem o formulário do site.
+  $("uploadBtn").addEventListener("click",()=>{
     $("typeModal").classList.add("show"); $("typeBackdrop").classList.add("show");
-  }
+  });
+  $("fileInput").addEventListener("change",(e)=>{
+    const f=e.target.files&&e.target.files[0], t=pendingType; e.target.value=""; pendingType=null;
+    if(!f||!t) return;
+    if(f.type!=="application/pdf" && !/\.pdf$/i.test(f.name)){ VX.toast("Envie um arquivo PDF."); return; }
+    startUpload(f,t);
+  });
   function closeType(){ $("typeModal").classList.remove("show"); $("typeBackdrop").classList.remove("show"); }
   $("typeClose").addEventListener("click",closeType);
   $("typeBackdrop").addEventListener("click",closeType);
   document.querySelectorAll(".type-opt").forEach(b=>b.addEventListener("click",()=>{
-    const t=b.dataset.type, f=pendingFile; closeType(); if(f) startUpload(f,t);
+    const t=b.dataset.type; closeType();
+    if(t==="landing"){ openLanding(null); return; }
+    pendingType=t; $("fileInput").click();
   }));
+
+  // ================= landing page =================
+  // Endereço e páginas ficam em {slug}/landing.json; a capa (opcional) em {slug}/pages/0.jpg.
+  let lpEditing=null, lpSaving=false;
+  function lpRow(p={}){
+    const row=document.createElement("div"); row.className="lp-row";
+    row.innerHTML=`<input data-k="title" type="text" maxlength="80" placeholder="Nome da página" aria-label="Nome da página">
+      <input data-k="path" type="text" placeholder="/caminho/" aria-label="Caminho da página">
+      <button type="button" aria-label="Remover página" title="Remover">×</button>`;
+    row.querySelector('[data-k="title"]').value=p.title||"";
+    row.querySelector('[data-k="path"]').value=p.path||"";
+    row.querySelector("button").addEventListener("click",()=>{
+      row.remove();
+      if(!$("lpRows").children.length) $("lpRows").appendChild(lpRow({path:"/",title:"Home"}));
+    });
+    return row;
+  }
+  function setLpRows(pages){
+    const box=$("lpRows"); box.innerHTML="";
+    (pages&&pages.length?pages:[{path:"/",title:"Home"}]).forEach(p=>box.appendChild(lpRow(p)));
+  }
+  function readLpRows(){
+    return [...$("lpRows").querySelectorAll(".lp-row")].map(r=>({
+      title:r.querySelector('[data-k="title"]').value, path:r.querySelector('[data-k="path"]').value }));
+  }
+  async function openLanding(m){
+    lpEditing=m; $("lpError").textContent="";
+    $("lpModalTitle").textContent = m ? "Editar landing page" : "Nova landing page";
+    $("lpName").value = m ? (m.name||m.id) : ""; $("lpName").disabled=!!m;
+    $("lpUrl").value=""; $("lpCover").value=""; setLpRows(null);
+    $("lpModal").classList.add("show"); $("lpBackdrop").classList.add("show");
+    $("lpUrl").focus();
+    if(m){
+      const cfg=await VX.landingConfig(m.id).catch(()=>null);
+      if(cfg && lpEditing===m){ $("lpUrl").value=cfg.url; setLpRows(cfg.pages); }
+    }
+  }
+  function closeLanding(){
+    if(lpSaving) return;
+    $("lpModal").classList.remove("show"); $("lpBackdrop").classList.remove("show"); lpEditing=null;
+  }
+  $("lpClose").addEventListener("click",closeLanding);
+  $("lpCancel").addEventListener("click",closeLanding);
+  $("lpBackdrop").addEventListener("click",closeLanding);
+  $("lpAddRow").addEventListener("click",()=>{ const r=lpRow({}); $("lpRows").appendChild(r); r.querySelector("input").focus(); });
+  $("lpModal").addEventListener("keydown",e=>{ if(e.key==="Escape"){ e.preventDefault(); closeLanding(); } });
+
+  // Busca as páginas internas pelo proxy (/api/lp?descobrir=), que lê o HTML do site.
+  $("lpDiscover").addEventListener("click",async()=>{
+    const btn=$("lpDiscover"); $("lpError").textContent="";
+    let url;
+    try{ url=VX.normalizeLandingUrl($("lpUrl").value); }
+    catch(err){ $("lpError").textContent=err.message; $("lpUrl").focus(); return; }
+    btn.disabled=true; btn.textContent="Buscando…";
+    try{
+      const r=await fetch("/api/lp?descobrir="+encodeURIComponent(url));
+      const data=await r.json().catch(()=>({}));
+      if(!r.ok || !Array.isArray(data.pages)) throw new Error(data.error||"Não foi possível ler o site.");
+      $("lpUrl").value=data.url||url; setLpRows(data.pages);
+      if(!$("lpName").value.trim() && data.title) $("lpName").value=data.title.split(/\s+[|–—-]\s+/)[0].slice(0,120);
+      const n=data.pages.length;
+      VX.toast(n+" página"+(n===1?"":"s")+" encontrada"+(n===1?"":"s")+". Revise antes de salvar.");
+    }catch(err){ console.error(err); $("lpError").textContent=(err.message||String(err))+" Você pode preencher as páginas à mão."; }
+    finally{ btn.disabled=false; btn.textContent="Buscar páginas"; }
+  });
+
+  // Capa: topo do print, recortado em 16:10 e convertido para JPEG de 1440 px.
+  function coverFromImage(file){
+    return new Promise((resolve,reject)=>{
+      const url=URL.createObjectURL(file), im=new Image();
+      im.onload=()=>{
+        const w=1440, h=900, c=document.createElement("canvas"); c.width=w; c.height=h;
+        const ctx=c.getContext("2d",{alpha:false}); ctx.fillStyle="#fff"; ctx.fillRect(0,0,w,h);
+        const s=w/im.naturalWidth, sh=Math.min(im.naturalHeight, h/s);
+        ctx.drawImage(im,0,0,im.naturalWidth,sh,0,0,w,sh*s);
+        URL.revokeObjectURL(url);
+        c.toBlob(b=>b?resolve(b):reject(new Error("Não foi possível converter a capa.")),"image/jpeg",0.85);
+      };
+      im.onerror=()=>{ URL.revokeObjectURL(url); reject(new Error("Imagem de capa inválida.")); };
+      im.src=url;
+    });
+  }
+
+  $("lpForm").addEventListener("submit",async(e)=>{
+    e.preventDefault(); if(lpSaving) return;
+    const err=$("lpError"); err.textContent="";
+    let url, name, pages;
+    try{
+      url=VX.normalizeLandingUrl($("lpUrl").value);
+      name=lpEditing ? lpEditing.name : VX.normalizeMaterialName($("lpName").value);
+      pages=VX.normalizeLandingPages(readLpRows());
+      if(!pages.length) throw new Error("Adicione pelo menos uma página (ex.: / para a home).");
+    }catch(ex){ err.textContent=ex.message; return; }
+    const slug=lpEditing ? lpEditing.id : VX.makeSlug(name);
+    const coverFile=$("lpCover").files[0];
+    lpSaving=true; const save=$("lpSave"); save.disabled=true; save.textContent="Salvando…";
+    try{
+      const existing=await VX.getMockup(slug);
+      if(existing && existing.type!=="landing") throw new Error("Já existe um material em PDF com esse nome. Use outro nome.");
+      if(existing && !lpEditing && !confirm(`Já existe a landing page "${existing.name}". Atualizar o endereço e as páginas dela?`))
+        throw new Error("Escolha outro nome para criar uma nova landing page.");
+      await VX.saveLandingConfig(slug,{ url, pages });
+      if(coverFile){
+        const blob=await coverFromImage(coverFile);
+        const { error:upErr } = await sb.storage.from(BUCKET).upload(`${slug}/pages/0.jpg`, blob, { contentType:"image/jpeg", upsert:true });
+        if(upErr) throw upErr;
+      }
+      // num_pages/aspect são gravados depois da capa: o trigger renova cover_version.
+      const row={ num_pages:pages.length, aspect:0.625, type:"landing", expires_at:null };
+      const query=existing ? sb.from("mockups").update(row).eq("id",slug) : sb.from("mockups").insert({ id:slug, name, ...row });
+      const { error } = await query.select("id").single();
+      if(error){
+        if(!existing) await sb.storage.from(BUCKET).remove([`${slug}/landing.json`,`${slug}/pages/0.jpg`]).catch(()=>{});
+        if(error.code==="23514") throw new Error("O banco ainda não aceita o tipo Landing Page. Rode a migração do tipo landing no Supabase.");
+        throw error;
+      }
+      lpSaving=false; closeLanding();
+      VX.toast(existing ? "Landing page atualizada." : "Landing page criada: "+slug);
+      VX.notifyMaterialsChanged(slug); load();
+    }catch(ex){ console.error(ex); err.textContent=ex.message||String(ex); }
+    finally{ lpSaving=false; save.disabled=false; save.textContent="Salvar landing page"; }
+  });
 
   async function renderPdf(buf, type){
     const pdf = await pdfjsLib.getDocument({ data: buf }).promise;

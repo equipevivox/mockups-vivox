@@ -61,6 +61,8 @@
     try{
       const mk = await VX.getMockup(slug);
       if(!mk){ fail("Este material não existe."); return; }
+      // Landing pages têm revisão própria, com o site ao vivo.
+      if(mk.type==="landing"){ location.replace(VX.viewerUrl(slug,new URLSearchParams(location.search).get("comment")==="1","landing")); return; }
       state.id=slug; state.name=mk.name||slug; state.type=mk.type;
       state.aspect = mk.aspect || (isPresentation()?0.5625:60/49);
       $("viewer").classList.toggle("viewer--apresentacao",isPresentation());

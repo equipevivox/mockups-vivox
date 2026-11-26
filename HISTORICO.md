@@ -1,3 +1,15 @@
+## 2026-11-26 — Landing pages ao vivo no grid (protótipo com a LP do Dr. João)
+
+**Pedido:** visualizar e comentar landing pages com várias páginas, carrossel, 3D e popups; protótipo com `lp-drjoaomardio.vivoxmarketing.com.br`; opção “Landing Page” em “O que você está enviando?” com ícone no padrão dos demais.
+
+**Alterações:** `api/lp.js` (proxy de revisão: `<base>` + script injetado, CSP sandbox, repasse de arquivos com CORS, descoberta de páginas, bloqueio de endereços internos); `lp-review.js` (rolagem/altura por postMessage, links internos, tradutor de histórico para Next.js, fetch/XHR via proxy); `lp.html/lp.js/lp.css` (lista de páginas, computador/celular escalados, visão geral, comentários sobre camada transparente com pins que acompanham a rolagem); painel com tipo primeiro, formulário de LP, Editar páginas, exclusão de `landing.json`; `common.js` (`viewerUrl` por tipo, helpers de landing); portfólio com filtro Landing Pages; rota `/lp/:slug`; testes `landing.test.cjs` e `landing.browser.cjs`. Material `LP_DR_JOAO_MARDIO` criado privado com capa.
+
+**Decisões:** proxy em vez de iframe direto ou prints — o site funciona inteiro e o arquivo da LP não precisa de script. Origem opaca isola o código de terceiros do grid. Sem migração (Supabase sem acesso de admin nesta sessão): config no Storage e coordenadas codificadas nos campos existentes.
+
+**Verificações:** 25 testes Node; Chrome headless 1440×1000 e 390×844 contra a LP real; o modelo 3D carregou pelo proxy (antes bloqueado por CORS) e o Next deixou de cair na tela de erro; carga real do material e do formulário do painel. Linha temporária `__TESTE_TIPO_LANDING__` e arquivo `__TESTE_MIME__/probe` usados para sondar o banco/bucket foram removidos.
+
+**Pendências:** confirmar no deploy da Vercel; migração `w/h` para áreas; liberar `application/json` no bucket; unificar a UI de comentários de `viewer.js` e `lp.js`.
+
 ## 2026-11-10 — Publicação: apresentações, comentário por área e anexos
 
 **Pedido:** visualização de apresentações 1920×1080 com os mesmos comentários; comentário selecionando área com o mouse; anexos de imagem; ajustar a animação de passar de página e subir ao Git.
